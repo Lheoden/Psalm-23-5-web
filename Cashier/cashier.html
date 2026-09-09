@@ -1,0 +1,236 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Cashier Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { poppins: ['Poppins', 'sans-serif'] },
+          colors: {
+            cream: '#F5F0E8',
+            forest: '#2D5016',
+            forestLight: '#3A6B1E',
+            goldAccent: '#C4922A',
+            cardBg: '#FFFDF8'
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="../Assets/Css/Global.css" />
+  <link rel="stylesheet" href="../Assets/Css/Cashier.css" />
+ </head>
+ <body class="cashier-body">
+  <div class="cashier-shell">
+   <aside class="cashier-sidebar">
+    <div class="brand-block">
+     <div class="brand-icon-wrap">
+      <img src="../Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" class="brand-logo" />
+     </div>
+     <div class="brand-meta">
+      <span class="brand-main">23:5 COFFEE</span>
+      <span class="brand-sub">All Glory to God</span>
+     </div>
+    </div>
+
+    <nav class="sidebar-nav" aria-label="Main navigation">
+     <button type="button" class="nav-item active">
+      <span class="nav-icon"><i data-lucide="layout-grid" class="w-4 h-4"></i></span>
+      <span>Dashboard</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="clipboard-list" class="w-4 h-4"></i></span>
+      <span>Orders</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="coffee" class="w-4 h-4"></i></span>
+      <span>Menu</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="users" class="w-4 h-4"></i></span>
+      <span>Customers</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="receipt" class="w-4 h-4"></i></span>
+      <span>Transactions</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="bar-chart-3" class="w-4 h-4"></i></span>
+      <span>Reports</span>
+     </button>
+     <button type="button" class="nav-item">
+      <span class="nav-icon"><i data-lucide="settings" class="w-4 h-4"></i></span>
+      <span>Settings</span>
+     </button>
+    </nav>
+
+    <div class="sidebar-footer">
+     <div class="footer-mark">
+      <span class="footer-mark-crest">✦</span>
+     </div>
+     <div class="footer-copy">
+      <strong>All Glory to God</strong>
+      <span>Psalm 23:5</span>
+     </div>
+    </div>
+   </aside>
+
+   <div class="cashier-main">
+    <header class="topbar">
+     <div class="topbar-quote">“Let all things be done decently and in order.”<span>– 1 Corinthians 14:40</span></div>
+     <div class="topbar-actions">
+      <div class="branch-select" aria-label="Branch selector">
+       <span>Calamba Branch</span>
+       <i data-lucide="chevron-down" class="w-4 h-4"></i>
+      </div>
+      <div class="account-pill">
+       <div class="avatar-badge">C</div>
+       <div class="account-text">
+        <strong>Cashier</strong>
+        <span>Cashier</span>
+       </div>
+      </div>
+      <button type="button" class="logout-btn" aria-label="Logout">
+       <i data-lucide="log-out" class="w-4 h-4"></i>
+      </button>
+     </div>
+    </header>
+
+    <section class="page-header">
+     <h1>CASHIER DASHBOARD</h1>
+     <p>Review, process, and manage customer orders with accuracy and care.</p>
+    </section>
+
+    <main class="pos-layout">
+     <section class="queue-panel">
+      <div class="panel-head">
+       <div>
+        <h2>ORDER QUEUE</h2>
+        <p>Orders are processed from the queue.</p>
+       </div>
+       <button type="button" class="refresh-btn" onclick="loadOrders()">
+        <i data-lucide="refresh-cw" class="w-4 h-4"></i>
+        Refresh
+       </button>
+      </div>
+      <div id="order-list" class="order-list"></div>
+      <div id="empty-state" class="empty-state hidden">
+       <p class="empty-title">No unpaid orders</p>
+       <p class="empty-sub">New customer orders will appear here.</p>
+      </div>
+     </section>
+
+     <section class="detail-panel">
+      <div id="detail-panel" class="detail-card hidden">
+       <div class="detail-header">
+        <div>
+         <p class="eyebrow">VIEWING ORDER</p>
+         <h2 id="detail-order-number">Order #000</h2>
+         <p id="detail-order-type">Dine-in</p>
+        </div>
+        <span id="detail-status" class="status-badge">UNPAID</span>
+       </div>
+
+       <div class="verify-banner">Verify order with customer (show order number)</div>
+
+       <div class="section-heading">
+        <h3>ITEMS</h3>
+        <button type="button" class="edit-btn" onclick="openEditModal()">
+         <i data-lucide="pencil" class="w-4 h-4"></i>
+         Edit Order
+        </button>
+       </div>
+
+       <div id="detail-items" class="detail-items"></div>
+
+       <div class="payment-grid">
+        <div class="mini-card subtotal-card">
+         <p>SUBTOTAL</p>
+         <strong id="detail-subtotal">₱0.00</strong>
+        </div>
+
+        <div class="mini-card payment-card">
+         <p>PAYMENT</p>
+         <button id="payment-cash" type="button" class="payment-option active">Cash</button>
+
+         <div id="cash-fields" class="cash-fields">
+          <label for="cash-received">Amount Received</label>
+          <input id="cash-received" type="number" min="0" step="0.01" value="" oninput="updateCashChange()" placeholder="₱0.00" />
+          <div class="cash-meta">
+           <span>Change</span>
+           <strong id="cash-change">₱0.00</strong>
+          </div>
+         </div>
+        </div>
+       </div>
+
+       <div class="action-row">
+        <button id="mark-paid" type="button" onclick="markAsPaid()" class="primary-btn">
+         <i data-lucide="check" class="w-4 h-4"></i>
+         Mark as Paid
+        </button>
+        <button type="button" onclick="clearSelection()" class="secondary-btn">
+         <i data-lucide="arrow-left" class="w-4 h-4"></i>
+         Back to Queue
+        </button>
+       </div>
+      </div>
+
+      <div id="detail-empty" class="detail-empty">
+       <p class="empty-title">Select an order</p>
+       <p class="empty-sub">Choose an order from the queue to view and process it.</p>
+      </div>
+     </section>
+    </main>
+   </div>
+  </div>
+
+  <div id="success-toast" class="success-toast hidden">
+   <p id="success-text">Order paid successfully.</p>
+  </div>
+
+  <div id="edit-modal" class="modal-backdrop hidden">
+   <div class="edit-modal-card">
+    <div class="modal-header">
+     <div>
+      <p class="modal-eyebrow">EDIT ORDER</p>
+      <h2>Update items before payment</h2>
+     </div>
+     <button type="button" onclick="closeEditModal()" class="modal-close-btn" aria-label="Close edit order modal">
+      <i data-lucide="x" class="w-5 h-5"></i>
+     </button>
+    </div>
+
+    <div class="modal-body">
+     <div id="modal-items" class="modal-items"></div>
+
+     <div class="modal-add-row">
+      <select id="new-item-type">
+       <option value="Americano">Americano</option>
+       <option value="Latte">Latte</option>
+       <option value="Espresso">Espresso</option>
+       <option value="Cookie">Cookie</option>
+       <option value="Pasta">Pasta</option>
+      </select>
+      <button type="button" onclick="addModalItem()" class="add-item-btn">Add Item</button>
+     </div>
+
+     <div class="modal-footer">
+      <p>Change quantities or remove items before saving.</p>
+      <button type="button" onclick="saveOrderChanges()" class="save-btn">Save Changes</button>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  <script src="../Assets/Js/Global.js"></script>
+  <script src="../Assets/Js/Cashier.js"></script>
+ </body>
+</html>

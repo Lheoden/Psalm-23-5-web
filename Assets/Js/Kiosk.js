@@ -1,0 +1,1966 @@
+const products = [
+
+  // ============================================================
+  // HOT / ICED COFFEE
+  // ============================================================
+
+  {
+    id: 1,
+    name: "Psalm Signature",
+    desc: "Sweet and bold signature coffee",
+    price: 150,
+    category: "coffee",
+    tag: "Best Seller",
+    emoji: "Espresso.png"
+  },
+
+  {
+    id: 2,
+    name: "Espresso Matcha",
+    desc: "Espresso blended with matcha",
+    price: 120,
+    category: "coffee",
+    tag: "Popular",
+    emoji: "Espresso matcha.png"
+  },
+
+  {
+    id: 3,
+    name: "Americano",
+    desc: "Espresso with water, served hot or iced",
+    price: 90,
+    category: "coffee",
+    tag: "",
+    emoji: "Americano.png"
+  },
+
+  {
+    id: 4,
+    name: "Spanish Latte",
+    desc: "Espresso shots with vanilla and condensed milk",
+    price: 125,
+    category: "coffee",
+    tag: "",
+    emoji: "Spanish latte.png"
+  },
+
+  {
+    id: 5,
+    name: "Mocha Latte",
+    desc: "Espresso shots with milk, chocolate, and cream",
+    price: 130,
+    category: "coffee",
+    tag: "",
+    emoji: "Mocha latte.png"
+  },
+
+  {
+    id: 6,
+    name: "Salted Caramel",
+    desc: "Creamy espresso with the aroma of salted caramel",
+    price: 130,
+    category: "coffee",
+    tag: "",
+    emoji: "Salted caramel.png"
+  },
+
+  {
+    id: 16,
+    name: "Latte",
+    desc: "Espresso shots mixed with full milk",
+    price: 120,
+    category: "coffee",
+    tag: "",
+    emoji: "Latte.png"
+  },
+
+  {
+    id: 17,
+    name: "Vanilla Latte",
+    desc: "Espresso shots with milk and vanilla",
+    price: 120,
+    category: "coffee",
+    tag: "",
+    emoji: "Vanilla latte.png"
+  },
+
+  {
+    id: 18,
+    name: "Caramel Macchiato",
+    desc: "Espresso shots with milk and vanilla topped with caramel",
+    price: 120,
+    category: "coffee",
+    tag: "",
+    emoji: "Caramel macchiato.png"
+  },
+
+
+  // ============================================================
+  // FRAPPE
+  // ============================================================
+
+
+  {
+    id: 19,
+    name: "Strawberry Cream Cheese",
+    desc: "Strawberry frappe with creamy cheese",
+    price: 135,
+    category: "frappe",
+    tag: "",
+    emoji: "Strawberry Cream Cheese.png"
+  },
+
+  {
+    id: 20,
+    name: "Blueberry Cream Cheese",
+    desc: "Blueberry frappe with creamy cheese",
+    price: 135,
+    category: "frappe",
+    tag: "",
+    emoji: "Blueberry Cream Cheese.png"
+  },
+
+  {
+    id: 21,
+    name: "Matcha Cream Cheese",
+    desc: "Matcha frappe with creamy cheese",
+    price: 135,
+    category: "frappe",
+    tag: "",
+    emoji: "Matcha Cream Cheese.png"
+  },
+
+  {
+    id: 22,
+    name: "Ube Cream Cheese",
+    desc: "Ube frappe with creamy cheese",
+    price: 135,
+    category: "frappe",
+    tag: "",
+    emoji: "Ube Cream Cheese.png"
+  },
+
+  {
+    id: 23,
+    name: "Oreo Cream Cheese",
+    desc: "Oreo frappe with creamy cheese",
+    price: 145,
+    category: "frappe",
+    tag: "",
+    emoji: "Oreo Cream Cheese.png"
+  },
+
+  {
+    id: 24,
+    name: "Oreo Matcha Frappe",
+    desc: "Matcha frappe blended with Oreo",
+    price: 145,
+    category: "frappe",
+    tag: "",
+    emoji: "Oreo Matcha Frappe.png"
+  },
+
+  {
+    id: 25,
+    name: "Choco Java Chips Frappe",
+    desc: "Chocolate frappe blended with java chips",
+    price: 155,
+    category: "frappe",
+    tag: "",
+    emoji: "Choco Java Chips Frappe.png"
+  },
+
+  {
+    id: 26,
+    name: "Mocha Cookie Crumble Frappe",
+    desc: "Mocha frappe with cookie crumble",
+    price: 155,
+    category: "frappe",
+    tag: "",
+    emoji: "Mocha Cookie Crumble Frappe.png"
+  },
+
+  {
+    id: 27,
+    name: "Biscoff Flavor Frappe",
+    desc: "Creamy frappe with Biscoff flavor",
+    price: 155,
+    category: "frappe",
+    tag: "",
+    emoji: "Biscoff Flavor Frappe.png"
+  },
+
+
+  // ============================================================
+  // MILK / SODA / CHOCOLATE
+  // ============================================================
+
+
+  {
+    id: 28,
+    name: "Apple Soda",
+    desc: "Soda-based drink with jelly popping boba",
+    price: 75,
+    category: "other",
+    tag: "",
+    emoji: "Apple Soda.png"
+  },
+
+  {
+    id: 29,
+    name: "Blueberry Soda",
+    desc: "Soda-based drink with jelly popping boba",
+    price: 75,
+    category: "other",
+    tag: "",
+    emoji: "Blueberry Soda.png"
+  },
+
+  {
+    id: 30,
+    name: "Strawberry Matcha",
+    desc: "Matcha with full milk and strawberry",
+    price: 120,
+    category: "other",
+    tag: "",
+    emoji: "Strawberry Matcha.png"
+  },
+
+  {
+    id: 31,
+    name: "Blueberry Matcha",
+    desc: "Matcha with full milk and blueberry",
+    price: 120,
+    category: "other",
+    tag: "",
+    emoji: "Blueberry Matcha.png"
+  },
+
+  {
+    id: 32,
+    name: "Choco Drizzle",
+    desc: "Our signature blend of the famous chocolates",
+    price: 120,
+    category: "other",
+    tag: "",
+    emoji: "Choco Drizzle.png"
+  },
+
+  {
+    id: 33,
+    name: "Ube Latte",
+    desc: "A rich combination of sweet ube and espresso",
+    price: 135,
+    category: "other",
+    tag: "",
+    emoji: "Ube Latte.png"
+  },
+
+  {
+    id: 34,
+    name: "Ube Matcha",
+    desc: "A rich combination of sweet ube and matcha",
+    price: 140,
+    category: "other",
+    tag: "",
+    emoji: "Ube Matcha.png"
+  },
+
+
+  // ============================================================
+  // COOKIES & PASTA
+  // ============================================================
+
+  {
+    id: 35,
+    name: "Double Chocolate Cookies",
+    desc: "Rich and chewy double chocolate cookie",
+    price: 40,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 36,
+    name: "Red Velvet Cookies",
+    desc: "Soft and rich red velvet cookie",
+    price: 50,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 37,
+    name: "S'mores Cookies",
+    desc: "Chocolate cookie with sweet s'mores flavor",
+    price: 50,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 38,
+    name: "Oreo Brownies",
+    desc: "Rich chocolate brownies with Oreo",
+    price: 50,
+    category: "food",
+    tag: "",
+    emoji: "🍫"
+  },
+
+  {
+    id: 39,
+    name: "Brookie",
+    desc: "Brownie combined with cookies",
+    price: 50,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 40,
+    name: "Cinnamon Cookies",
+    desc: "Soft cookies with cinnamon flavor",
+    price: 55,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 41,
+    name: "Nutella Cookies",
+    desc: "Soft cookies filled with Nutella",
+    price: 60,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 42,
+    name: "Biscoff Cookies",
+    desc: "Cookies with rich Biscoff flavor",
+    price: 65,
+    category: "food",
+    tag: "",
+    emoji: "🍪"
+  },
+
+  {
+    id: 43,
+    name: "Cheesy Lasagna",
+    desc: "Creamy and cheesy baked lasagna",
+    price: 160,
+    category: "food",
+    tag: "",
+    emoji: "🍝"
+  }
+
+];
+
+
+const STORAGE_UNPAID = 'unpaidOrders';
+
+let cart = [];
+let currentCategory = 'coffee';
+let quantities = {};
+let currentEditItemId = null;
+let pendingAddProductId = null;
+let pendingCustomization = null;
+
+
+function getCurrentCustomizationTarget() {
+
+  if (currentEditItemId) {
+    return cart.find(c => c.id === currentEditItemId);
+  }
+
+  if (pendingAddProductId) {
+    if (!pendingCustomization) {
+      pendingCustomization = {
+        size:'Medium',
+        temp:'Hot',
+        sugar:50,
+        addons:[]
+      };
+    }
+
+    return pendingCustomization;
+  }
+
+  return null;
+}
+
+
+// ============================================================
+// IMAGE PATH
+// ============================================================
+
+function isImagePath(value) {
+  return typeof value === 'string' &&
+    /\.(png|jpe?g|gif|svg)$/i.test(value);
+}
+
+
+function getImagePath(filename) {
+  if (!isImagePath(filename)) {
+    return filename;
+  }
+
+  if (filename.startsWith('../Assets/Images/')) {
+    return filename;
+  }
+
+  return `../Assets/Images/${filename}`;
+}
+
+
+// ============================================================
+// CATEGORY
+// ============================================================
+
+function filterCategory(cat) {
+  currentCategory = cat;
+
+  document.querySelectorAll('.cat-tab').forEach(t => {
+    t.classList.remove('tab-active');
+    t.classList.add('bg-white', 'text-forest/70');
+  });
+
+  const active = document.querySelector(`[data-cat="${cat}"]`);
+
+  if (active) {
+    active.classList.add('tab-active');
+    active.classList.remove('bg-white', 'text-forest/70');
+  }
+
+  renderProducts();
+}
+
+
+// ============================================================
+// PRODUCTS
+// ============================================================
+
+function renderProducts() {
+
+  const grid = document.getElementById('product-grid');
+
+  const filtered = products.filter(
+    p => p.category === currentCategory
+  );
+
+  grid.innerHTML = filtered.map(p => {
+
+    const qty = quantities[p.id] || 1;
+
+    const inCart = cart.find(c => c.id === p.id);
+
+    const graphic = isImagePath(p.emoji)
+      ? `<img src="${getImagePath(p.emoji)}" alt="${p.name}" class="max-h-24 object-contain" />`
+      : p.emoji;
+
+    return `
+      <div class="card-hover bg-cardBg rounded-2xl p-4 relative border border-forest/5 fade-in">
+
+        ${
+          p.tag
+            ? `<span class="absolute top-3 right-3 text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                p.tag === 'New'
+                  ? 'bg-goldAccent/20 text-goldAccent'
+                  : 'bg-forest/10 text-forest'
+              }">${p.tag}</span>`
+            : ''
+        }
+
+        <span class="absolute top-3 left-3 text-xs font-bold bg-forest text-white px-2 py-0.5 rounded-lg">
+          ₱${p.price.toFixed(2)}
+        </span>
+
+        <div class="w-full h-24 flex items-center justify-center text-5xl mb-3 mt-2">
+          ${graphic}
+        </div>
+
+        <h4 class="font-semibold text-forest text-sm">
+          ${p.name}
+        </h4>
+
+        <p class="text-xs text-forest/50 mt-0.5 mb-3">
+          ${p.desc}
+        </p>
+
+        <button
+          id="add-btn-${p.id}"
+          onclick="addToCart(${p.id})"
+          class="w-full py-2.5 rounded-xl text-sm font-semibold transition ${
+            inCart
+              ? 'bg-forest/10 text-forest'
+              : 'bg-forest text-white hover:bg-forestLight'
+          }"
+        >
+          ${inCart ? '✓ Added' : 'Add to Cart'}
+        </button>
+
+      </div>
+    `;
+
+  }).join('');
+
+  lucide.createIcons();
+}
+
+
+// ============================================================
+// MOOD
+// ============================================================
+
+const moodOptions = [
+
+  {
+    key:'happy',
+    label:'Happy',
+    emoji:'😄',
+    verse:'“A joyful heart is good medicine.” – Proverbs 17:22'
+  },
+
+  {
+    key:'tired',
+    label:'Tired',
+    emoji:'😴',
+    verse:'“Come to me, all you who are weary, and I will give you rest.” – Matthew 11:28'
+  },
+
+  {
+    key:'stressed',
+    label:'Stressed',
+    emoji:'😟',
+    verse:'“Cast all your anxiety on him because he cares for you.” – 1 Peter 5:7'
+  },
+
+  {
+    key:'relaxed',
+    label:'Relaxed',
+    emoji:'🌿',
+    verse:'“He makes me lie down in green pastures.” – Psalm 23:2'
+  },
+
+  {
+    key:'sad',
+    label:'Sad',
+    emoji:'😔',
+    verse:'“The LORD is close to the brokenhearted and saves those who are crushed in spirit.” – Psalm 34:18'
+  },
+
+  {
+    key:'focused',
+    label:'Focused',
+    emoji:'🧠',
+    verse:'“Set your minds on things above, not on earthly things.” – Colossians 3:2'
+  }
+
+];
+
+
+const recommendationsByMood = {
+
+  // HAPPY
+  // Bright, sweet, fruity, and fun flavors
+  happy: [
+    19,  // Strawberry Cream Cheese
+    30,  // Strawberry Matcha
+    29,  // Blueberry Soda
+    27,  // Biscoff Flavor Frappe
+    42   // Biscoff Cookies
+  ],
+
+
+  // TIRED
+  // Coffee-forward choices for alertness and energy
+  tired: [
+    3,   // Americano
+    1,   // Psalm Signature
+    2,   // Espresso Matcha
+    18,  // Caramel Macchiato
+    25   // Choco Java Chips Frappe
+  ],
+
+
+  // STRESSED
+  // Creamy, sweet, familiar comfort flavors
+  stressed: [
+    17,  // Vanilla Latte
+    6,   // Salted Caramel
+    22,  // Ube Cream Cheese
+    23,  // Oreo Cream Cheese
+    41   // Nutella Cookies
+  ],
+
+
+  // RELAXED
+  // Smooth, mellow, less intense flavor profiles
+  relaxed: [
+    16,  // Latte
+    17,  // Vanilla Latte
+    21,  // Matcha Cream Cheese
+    33,  // Ube Latte
+    34   // Ube Matcha
+  ],
+
+
+  // SAD
+  // Familiar and indulgent comfort-style choices
+  sad: [
+    5,   // Mocha Latte
+    23,  // Oreo Cream Cheese
+    26,  // Mocha Cookie Crumble Frappe
+    38,  // Oreo Brownies
+    41   // Nutella Cookies
+  ],
+
+
+  // FOCUSED
+  // Coffee/matcha options with a more functional profile
+  focused: [
+    3,   // Americano
+    2,   // Espresso Matcha
+    1,   // Psalm Signature
+    24,  // Oreo Matcha Frappe
+    31   // Blueberry Matcha
+  ]
+
+};
+
+
+let currentScreen = 'main';
+
+let selectedMood = '';
+
+
+// ============================================================
+// SCREEN
+// ============================================================
+
+function showScreen(screen) {
+
+  currentScreen = screen;
+
+  document
+    .getElementById('main-menu-screen')
+    .classList
+    .toggle('hidden', screen !== 'main');
+
+  document
+    .getElementById('mood-screen')
+    .classList
+    .toggle('hidden', screen !== 'mood');
+
+  document
+    .getElementById('recommendation-screen')
+    .classList
+    .toggle('hidden', screen !== 'recommendations');
+
+  if (screen === 'main') {
+
+    document
+      .querySelectorAll('.cat-tab')
+      .forEach(t => t.classList.remove('tab-active'));
+
+    const active = document.querySelector(
+      `[data-cat="${currentCategory}"]`
+    );
+
+    if (active) {
+      active.classList.add('tab-active');
+    }
+
+    renderProducts();
+  }
+}
+
+
+// ============================================================
+// MOOD FLOW
+// ============================================================
+
+function openMoodFlow() {
+
+  renderMoodCards();
+
+  showScreen('mood');
+}
+
+
+function renderMoodCards() {
+
+  const container = document.getElementById('mood-cards');
+
+  container.innerHTML = moodOptions.map(m => `
+
+    <button
+      onclick="showRecommendations('${m.key}')"
+      class="w-full text-left rounded-3xl bg-forest/5 border border-forest/10 p-5 transition hover:shadow-lg hover:bg-forest/10"
+    >
+
+      <div class="flex items-center justify-between gap-4">
+
+        <span class="text-4xl">
+          ${m.emoji}
+        </span>
+
+        <span class="text-xs uppercase tracking-[0.2em] text-forest/50 font-semibold">
+          Tap to choose
+        </span>
+
+      </div>
+
+      <h4 class="mt-4 text-lg font-bold text-forest">
+        ${m.label}
+      </h4>
+
+    </button>
+
+  `).join('');
+
+  lucide.createIcons();
+}
+
+
+function showRecommendations(moodKey) {
+
+  selectedMood = moodKey;
+
+  const mood = moodOptions.find(
+    m => m.key === moodKey
+  );
+
+  document.getElementById('selected-mood-title').textContent =
+    mood
+      ? `${mood.label} picks for you`
+      : 'Mood suggestions chosen for your current feeling.';
+
+  const recIds =
+    recommendationsByMood[moodKey] || [];
+
+  const grid =
+    document.getElementById('recommendation-grid');
+
+  grid.innerHTML = recIds.map(id => {
+
+    const p = products.find(
+      item => item.id === id
+    );
+
+    if (!p) {
+      return '';
+    }
+
+    const graphic = isImagePath(p.emoji)
+
+      ? `<img src="${getImagePath(p.emoji)}" alt="${p.name}" class="max-h-20 object-contain" />`
+
+      : `<span class="text-5xl">${p.emoji}</span>`;
+
+    return `
+
+      <div class="card-hover rounded-3xl bg-cardBg p-5 border border-forest/10 shadow-sm transition hover:shadow-lg">
+
+        <div class="flex items-start justify-between gap-4">
+
+          <div>
+
+            <span class="inline-flex items-center gap-2 rounded-full bg-goldAccent/10 px-3 py-1 text-[11px] font-semibold text-goldAccent">
+              Best for your mood
+            </span>
+
+            <h4 class="mt-4 text-xl font-bold text-forest">
+              ${p.name}
+            </h4>
+
+            <p class="mt-2 text-sm text-forest/60">
+              ${p.desc}
+            </p>
+
+          </div>
+
+          <div class="shrink-0 rounded-3xl bg-forest/10 p-4">
+            ${graphic}
+          </div>
+
+        </div>
+
+        <div class="mt-5 flex items-center justify-between gap-3">
+
+          <span class="text-forest font-semibold">
+            ₱${p.price.toFixed(2)}
+          </span>
+
+          <button
+            onclick="openModal(${p.id}, '${mood ? mood.verse.replace(/'/g, "\\'") : ''}')"
+            class="rounded-2xl bg-forest px-4 py-2 text-sm font-semibold text-white hover:bg-forestLight transition"
+          >
+            Add to Cart
+          </button>
+
+        </div>
+
+      </div>
+
+    `;
+
+  }).join('');
+
+  showScreen('recommendations');
+}
+
+
+// ============================================================
+// VERSE
+// ============================================================
+
+function getVerseForProduct(id) {
+
+  const product = products.find(
+    p => p.id === id
+  );
+
+  if (!product) {
+    return '';
+  }
+
+  return `“Taste and see that the Lord is good.” – Psalm 34:8`;
+}
+
+
+// ============================================================
+// QUANTITY
+// ============================================================
+
+function changeQty(id, delta) {
+
+  if (!quantities[id]) {
+    quantities[id] = 1;
+  }
+
+  quantities[id] =
+    Math.max(1, quantities[id] + delta);
+
+  const el =
+    document.getElementById(`qty-${id}`);
+
+  if (el) {
+    el.textContent = quantities[id];
+  }
+}
+
+
+// ============================================================
+// CART
+// ============================================================
+
+function addToCart(id) {
+
+  const product =
+    products.find(p => p.id === id);
+
+  if (!product) {
+    return;
+  }
+
+  pendingAddProductId = id;
+  pendingCustomization = {
+    size:'Medium',
+    temp:'Hot',
+    sugar:50,
+    addons:[]
+  };
+
+  openModal(id, getVerseForProduct(id));
+}
+
+
+function removeFromCart(id) {
+
+  cart =
+    cart.filter(c => c.id !== id);
+
+  renderProducts();
+
+  renderCart();
+}
+
+
+function cartQty(id, delta) {
+
+  const item =
+    cart.find(c => c.id === id);
+
+  if (item) {
+
+    item.qty += delta;
+
+    if (item.qty <= 0) {
+
+      removeFromCart(id);
+
+      return;
+    }
+  }
+
+  renderCart();
+}
+
+
+// ============================================================
+// RENDER CART
+// ============================================================
+
+function renderCart() {
+
+  const empty =
+    document.getElementById('cart-empty');
+
+  const items =
+    document.getElementById('cart-items');
+
+  const footer =
+    document.getElementById('cart-footer');
+
+  if (cart.length === 0) {
+
+    empty.classList.remove('hidden');
+
+    items.classList.add('hidden');
+
+    footer.classList.add('hidden');
+
+  } else {
+
+    empty.classList.add('hidden');
+
+    items.classList.remove('hidden');
+
+    footer.classList.remove('hidden');
+
+    items.innerHTML = cart.map(c => {
+
+      const graphic =
+        isImagePath(c.emoji)
+
+          ? `<img src="${getImagePath(c.emoji)}" alt="${c.name}" class="w-12 h-12 object-contain rounded-xl" />`
+
+          : c.emoji;
+
+      return `
+
+        <div class="flex items-start gap-3 p-4 bg-cream rounded-xl">
+
+          <span class="shrink-0">
+            ${graphic}
+          </span>
+
+          <div class="flex-1 min-w-0">
+
+            <p class="text-sm font-semibold text-forest truncate">
+              ${c.name}
+            </p>
+
+            <p class="text-xs text-forest/50">
+              ₱${c.price.toFixed(2)} each
+            </p>
+
+          </div>
+
+          <div class="flex flex-col items-end gap-2">
+
+            <div class="flex items-center gap-1 rounded-lg bg-white p-1">
+
+              <button
+                onclick="cartQty(${c.id},-1)"
+                class="w-7 h-7 flex items-center justify-center rounded-md text-forest text-sm font-bold hover:bg-forest/10"
+              >
+                −
+              </button>
+
+              <span class="w-7 text-center text-sm font-semibold text-forest">
+                ${c.qty}
+              </span>
+
+              <button
+                onclick="cartQty(${c.id},1)"
+                class="w-7 h-7 flex items-center justify-center rounded-md text-forest text-sm font-bold hover:bg-forest/10"
+              >
+                +
+              </button>
+
+            </div>
+
+            <div class="flex items-center gap-2">
+
+              <button
+                onclick="openModal(${c.id})"
+                class="text-[10px] text-goldAccent font-semibold hover:underline"
+              >
+                Customize
+              </button>
+
+              <button
+                onclick="removeFromCart(${c.id})"
+                class="w-8 h-8 flex items-center justify-center rounded-md text-red-400 hover:text-red-600 bg-white hover:bg-red-50"
+              >
+                <i data-lucide="trash-2" class="w-4 h-4"></i>
+              </button>
+
+            </div>
+
+          </div>
+
+        </div>
+
+      `;
+
+    }).join('');
+
+    const subtotal =
+      cart.reduce(
+        (s, c) => s + c.price * c.qty,
+        0
+      );
+
+    document.getElementById('subtotal').textContent =
+      '₱' + subtotal.toFixed(2);
+
+    document.getElementById('total').textContent =
+      '₱' + subtotal.toFixed(2);
+
+    lucide.createIcons();
+  }
+}
+
+
+// ============================================================
+// UNPAID ORDERS
+// ============================================================
+
+function loadUnpaidOrders() {
+
+  return JSON.parse(
+    localStorage.getItem(STORAGE_UNPAID) || 'null'
+  ) || [];
+
+}
+
+
+function saveUnpaidOrders(orders) {
+
+  localStorage.setItem(
+    STORAGE_UNPAID,
+    JSON.stringify(orders)
+  );
+
+}
+
+
+// ============================================================
+// CUSTOMIZATION MODAL
+// ============================================================
+
+function openModal(id, verse = '') {
+
+  const p =
+    products.find(pr => pr.id === id);
+
+  const cartItem =
+    cart.find(c => c.id === id);
+
+  currentEditItemId =
+    cartItem ? id : null;
+
+  pendingAddProductId =
+    cartItem ? null : (pendingAddProductId || id);
+
+  if (!cartItem && pendingAddProductId) {
+    pendingCustomization =
+      pendingCustomization || {
+        size:'Medium',
+        temp:'Hot',
+        sugar:50,
+        addons:[]
+      };
+  }
+
+  const itemData =
+    cartItem || pendingCustomization || {
+      size:'Medium',
+      temp:'Hot',
+      sugar:50,
+      addons:[]
+    };
+
+  document.getElementById('modal-title').textContent =
+    'Customize ' + p.name;
+
+  const verseEl =
+    document.getElementById('modal-verse');
+
+  if (verse) {
+
+    verseEl.textContent = verse;
+
+    verseEl.classList.remove('hidden');
+
+  } else {
+
+    verseEl.textContent = '';
+
+    verseEl.classList.add('hidden');
+
+  }
+
+  document.getElementById('sugar-value').textContent =
+    itemData.sugar + '%';
+
+
+  document
+    .querySelectorAll('.sugar-btn')
+    .forEach(b => {
+
+      const selected =
+        b.dataset.sugar === String(itemData.sugar);
+
+      b.classList.toggle(
+        'border-forest',
+        selected
+      );
+
+      b.classList.toggle(
+        'bg-forest/10',
+        selected
+      );
+
+      b.classList.toggle(
+        'bg-white',
+        !selected
+      );
+
+      b.classList.toggle(
+        'text-forest',
+        selected
+      );
+
+      b.classList.toggle(
+        'text-forest/60',
+        !selected
+      );
+
+    });
+
+
+  document
+    .querySelectorAll('.temp-btn')
+    .forEach(b => {
+
+      b.classList.remove(
+        'border-forest',
+        'bg-forest',
+        'text-white'
+      );
+
+      b.classList.add(
+        'border-forest/20',
+        'bg-white',
+        'text-forest/70'
+      );
+
+    });
+
+
+  const tempButton =
+    Array.from(
+      document.querySelectorAll('.temp-btn')
+    ).find(
+      b => b.textContent.trim() === itemData.temp
+    );
+
+  if (tempButton) {
+    selectTemp(tempButton, itemData.temp);
+  }
+
+
+  document
+    .querySelectorAll('[data-addon]')
+    .forEach(b => {
+
+      const addon =
+        b.getAttribute('data-addon');
+
+      const selected =
+        itemData.addons.includes(addon);
+
+      b.classList.toggle(
+        'bg-forest',
+        selected
+      );
+
+      b.classList.toggle(
+        'text-white',
+        selected
+      );
+
+      b.classList.toggle(
+        'border-forest',
+        selected
+      );
+
+      b.classList.toggle(
+        'border-forest/20',
+        !selected
+      );
+
+      b.classList.toggle(
+        'bg-white',
+        !selected
+      );
+
+    });
+
+
+  document
+    .getElementById('addon-choices')
+    .classList.add('hidden');
+
+  document
+    .getElementById('customize-modal')
+    .classList.remove('hidden');
+
+}
+
+
+function closeModal() {
+
+  if (!currentEditItemId && pendingAddProductId) {
+    pendingAddProductId = null;
+    pendingCustomization = null;
+  }
+
+  document
+    .getElementById('customize-modal')
+    .classList.add('hidden');
+
+}
+
+
+function confirmCustomization() {
+
+  if (pendingAddProductId) {
+
+    const product =
+      products.find(p => p.id === pendingAddProductId);
+
+    if (product) {
+
+      const qty =
+        quantities[product.id] || 1;
+
+      const existing =
+        cart.find(c => c.id === product.id);
+
+      const itemData =
+        pendingCustomization || {
+          size:'Medium',
+          temp:'Hot',
+          sugar:50,
+          addons:[]
+        };
+
+      if (existing) {
+        existing.qty += qty;
+        existing.temp = itemData.temp;
+        existing.sugar = itemData.sugar;
+        existing.addons = [...itemData.addons];
+      } else {
+        cart.push({
+          ...product,
+          qty,
+          ...itemData
+        });
+      }
+
+      quantities[product.id] = 1;
+      renderProducts();
+      renderCart();
+    }
+
+    pendingAddProductId = null;
+    pendingCustomization = null;
+  }
+
+  document
+    .getElementById('customize-modal')
+    .classList.add('hidden');
+
+}
+
+
+function selectTemp(el, temp) {
+
+  document
+    .querySelectorAll('.temp-btn')
+    .forEach(b => {
+
+      b.classList.remove(
+        'border-forest',
+        'bg-forest',
+        'text-white'
+      );
+
+      b.classList.add(
+        'border-forest/20',
+        'bg-white',
+        'text-forest/70'
+      );
+
+    });
+
+
+  el.classList.add(
+    'border-forest',
+    'bg-forest',
+    'text-white'
+  );
+
+  el.classList.remove(
+    'border-forest/20',
+    'bg-white',
+    'text-forest/70'
+  );
+
+  const target = getCurrentCustomizationTarget();
+
+  if (target) {
+    target.temp = temp;
+  }
+
+  if (pendingAddProductId) {
+    pendingCustomization = pendingCustomization || {
+      size:'Medium',
+      temp:'Hot',
+      sugar:50,
+      addons:[]
+    };
+    pendingCustomization.temp = temp;
+  }
+
+}
+
+
+function selectSugar(el, sugar) {
+
+  document
+    .querySelectorAll('.sugar-btn')
+    .forEach(b => {
+
+      b.classList.remove(
+        'border-forest',
+        'bg-forest/10',
+        'text-forest'
+      );
+
+      b.classList.add(
+        'border-forest/20',
+        'bg-white',
+        'text-forest/60'
+      );
+
+    });
+
+
+  if (el) {
+
+    el.classList.add(
+      'border-forest',
+      'bg-forest/10',
+      'text-forest'
+    );
+
+  }
+
+
+  document.getElementById('sugar-value').textContent =
+    sugar + '%';
+
+  const target = getCurrentCustomizationTarget();
+
+  if (target) {
+    target.sugar = sugar;
+  }
+
+  if (pendingAddProductId) {
+    pendingCustomization = pendingCustomization || {
+      size:'Medium',
+      temp:'Hot',
+      sugar:50,
+      addons:[]
+    };
+    pendingCustomization.sugar = sugar;
+  }
+
+}
+
+
+function toggleAddOnChoices() {
+
+  document
+    .getElementById('addon-choices')
+    .classList.toggle('hidden');
+
+  lucide.createIcons();
+
+}
+
+
+function toggleAddOnOption(button) {
+
+  button.classList.toggle('bg-forest');
+
+  button.classList.toggle('text-white');
+
+  button.classList.toggle('border-forest');
+
+  button.classList.toggle('border-forest/20');
+
+  button.classList.toggle('bg-white');
+
+
+  const addon =
+    button.getAttribute('data-addon');
+
+  const target = getCurrentCustomizationTarget();
+
+  if (addon && target) {
+
+    const index =
+      target.addons.indexOf(addon);
+
+    if (index >= 0) {
+
+      target.addons.splice(index, 1);
+
+    } else {
+
+      target.addons.push(addon);
+
+    }
+
+  }
+
+  if (pendingAddProductId) {
+    pendingCustomization = pendingCustomization || {
+      size:'Medium',
+      temp:'Hot',
+      sugar:50,
+      addons:[]
+    };
+    pendingCustomization.addons = [...(target ? target.addons : pendingCustomization.addons || [])];
+  }
+
+}
+
+
+// ============================================================
+// CHECKOUT
+// ============================================================
+
+function checkoutCart() {
+
+  if (cart.length === 0) {
+    return;
+  }
+
+
+  const count =
+    cart.reduce(
+      (total, item) => total + item.qty,
+      0
+    );
+
+
+  const total =
+    cart.reduce(
+      (sum, item) => sum + item.qty * item.price,
+      0
+    );
+
+
+  document.getElementById('order-count').textContent =
+    count;
+
+  document.getElementById('order-total').textContent =
+    '₱' + total.toFixed(2);
+
+
+  document.getElementById('order-items-list').innerHTML =
+    cart.map(item => {
+
+      const addons =
+        item.addons && item.addons.length
+          ? item.addons.join(', ')
+          : 'None';
+
+
+      return `
+
+        <div class="rounded-2xl bg-forest/10 p-3 border border-forest/10">
+
+          <p class="text-sm font-semibold text-forest">
+            ${item.name} × ${item.qty}
+          </p>
+
+          <p class="text-xs text-forest/60 mt-1">
+            Size: ${item.size}
+          </p>
+
+          <p class="text-xs text-forest/60">
+            Drink Type: ${item.temp}
+          </p>
+
+          <p class="text-xs text-forest/60">
+            Sugar: ${item.sugar}%
+          </p>
+
+          <p class="text-xs text-forest/60">
+            Add-ons: ${addons}
+          </p>
+
+        </div>
+
+      `;
+
+    }).join('');
+
+
+  document
+    .getElementById('confirm-order-modal')
+    .classList
+    .remove('hidden');
+
+}
+
+
+// ============================================================
+// CONFIRM ORDER
+// ============================================================
+
+function closeConfirmOrder() {
+
+  document
+    .getElementById('confirm-order-modal')
+    .classList
+    .add('hidden');
+
+}
+
+
+function confirmOrder() {
+
+  const total =
+    cart.reduce(
+      (sum, item) => sum + item.qty * item.price,
+      0
+    );
+
+
+  const num =
+    Math.floor(Math.random() * 99) + 1;
+
+
+  const orderNumber =
+    '#' + String(num).padStart(2, '0');
+
+
+  const order = {
+
+    id: orderNumber,
+
+    number: orderNumber,
+
+    status: 'UNPAID',
+
+    timestamp: new Date().toISOString(),
+
+    type: 'Kiosk',
+
+    payment: 'Pending',
+
+    items: cart.map(item => ({
+
+      id: item.id,
+
+      name: item.name,
+
+      qty: item.qty,
+
+      size: item.size,
+
+      temp: item.temp,
+
+      sugar: item.sugar + '%',
+
+      addons: item.addons,
+
+      price: item.price
+
+    })),
+
+    total
+
+  };
+
+
+  const unpaidOrders =
+    loadUnpaidOrders();
+
+
+  unpaidOrders.push(order);
+
+
+  saveUnpaidOrders(unpaidOrders);
+
+
+  document
+    .getElementById('generated-order-number')
+    .textContent = orderNumber;
+
+
+  document
+    .getElementById('confirm-order-modal')
+    .classList
+    .add('hidden');
+
+
+  document
+    .getElementById('order-created-modal')
+    .classList
+    .remove('hidden');
+
+
+  cart = [];
+
+  renderCart();
+
+}
+
+
+// ============================================================
+// ORDER CREATED
+// ============================================================
+
+function closeOrderCreated() {
+
+  document
+    .getElementById('order-created-modal')
+    .classList
+    .add('hidden');
+
+}
+
+
+// ============================================================
+// TIME
+// ============================================================
+
+function updateTime() {
+
+  const now = new Date();
+
+  document.getElementById('current-time').textContent =
+    now.toLocaleTimeString(
+      [],
+      {
+        hour:'2-digit',
+        minute:'2-digit'
+      }
+    );
+
+}
+
+
+// ============================================================
+// INIT
+// ============================================================
+
+updateTime();
+
+setInterval(
+  updateTime,
+  60000
+);
+
+renderProducts();
+
+renderCart();
+
+lucide.createIcons();
+
+
+// ============================================================
+// ELEMENT SDK
+// ============================================================
+
+const defaultConfig = {
+
+  greeting_text:
+    "Good day! What would you like to have?",
+
+  branch_name:
+    "Main Street Branch",
+
+  rewards_text:
+    "Earn points with every purchase",
+
+  background_color:
+    "#F5F0E8",
+
+  surface_color:
+    "#FFFDF8",
+
+  text_color:
+    "#2D5016",
+
+  primary_action_color:
+    "#2D5016",
+
+  secondary_action_color:
+    "#C4922A",
+
+  font_family:
+    "Poppins",
+
+  font_size:
+    14
+
+};
+
+
+async function onConfigChange(config) {
+
+  document.getElementById('greeting').textContent =
+    config.greeting_text ||
+    defaultConfig.greeting_text;
+
+
+  document.getElementById('branch-name').textContent =
+    config.branch_name ||
+    defaultConfig.branch_name;
+
+
+  document.getElementById('rewards-text').textContent =
+    config.rewards_text ||
+    defaultConfig.rewards_text;
+
+
+  const bg =
+    config.background_color ||
+    defaultConfig.background_color;
+
+  const surface =
+    config.surface_color ||
+    defaultConfig.surface_color;
+
+  const text =
+    config.text_color ||
+    defaultConfig.text_color;
+
+  const primary =
+    config.primary_action_color ||
+    defaultConfig.primary_action_color;
+
+  const secondary =
+    config.secondary_action_color ||
+    defaultConfig.secondary_action_color;
+
+  const font =
+    config.font_family ||
+    defaultConfig.font_family;
+
+  const size =
+    config.font_size ||
+    defaultConfig.font_size;
+
+
+  document.body.style.fontFamily =
+    `${font}, Poppins, sans-serif`;
+
+  document.body.style.fontSize =
+    `${size}px`;
+
+  document.body.style.backgroundColor =
+    bg;
+
+}
+
+
+window.elementSdk.init({
+
+  defaultConfig,
+
+  onConfigChange,
+
+  mapToCapabilities: (config) => ({
+
+    recolorables: [
+
+      {
+        get: () =>
+          config.background_color ||
+          defaultConfig.background_color,
+
+        set: (v) => {
+
+          config.background_color = v;
+
+          window.elementSdk.setConfig({
+            background_color: v
+          });
+
+        }
+
+      },
+
+      {
+        get: () =>
+          config.surface_color ||
+          defaultConfig.surface_color,
+
+        set: (v) => {
+
+          config.surface_color = v;
+
+          window.elementSdk.setConfig({
+            surface_color: v
+          });
+
+        }
+
+      },
+
+      {
+        get: () =>
+          config.text_color ||
+          defaultConfig.text_color,
+
+        set: (v) => {
+
+          config.text_color = v;
+
+          window.elementSdk.setConfig({
+            text_color: v
+          });
+
+        }
+
+      },
+
+      {
+        get: () =>
+          config.primary_action_color ||
+          defaultConfig.primary_action_color,
+
+        set: (v) => {
+
+          config.primary_action_color = v;
+
+          window.elementSdk.setConfig({
+            primary_action_color: v
+          });
+
+        }
+
+      },
+
+      {
+        get: () =>
+          config.secondary_action_color ||
+          defaultConfig.secondary_action_color,
+
+        set: (v) => {
+
+          config.secondary_action_color = v;
+
+          window.elementSdk.setConfig({
+            secondary_action_color: v
+          });
+
+        }
+
+      }
+
+    ],
+
+    borderables: [],
+
+    fontEditable: {
+
+      get: () =>
+        config.font_family ||
+        defaultConfig.font_family,
+
+      set: (v) => {
+
+        config.font_family = v;
+
+        window.elementSdk.setConfig({
+          font_family: v
+        });
+
+      }
+
+    },
+
+    fontSizeable: {
+
+      get: () =>
+        config.font_size ||
+        defaultConfig.font_size,
+
+      set: (v) => {
+
+        config.font_size = v;
+
+        window.elementSdk.setConfig({
+          font_size: v
+        });
+
+      }
+
+    }
+
+  }),
+
+  mapToEditPanelValues: (config) => new Map([
+
+    [
+      "greeting_text",
+      config.greeting_text ||
+      defaultConfig.greeting_text
+    ],
+
+    [
+      "branch_name",
+      config.branch_name ||
+      defaultConfig.branch_name
+    ],
+
+    [
+      "rewards_text",
+      config.rewards_text ||
+      defaultConfig.rewards_text
+    ]
+
+  ])
+
+});
