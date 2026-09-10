@@ -35,7 +35,7 @@
       <img src="../Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" class="brand-logo" />
      </div>
      <div class="brand-meta">
-      <span class="brand-main">23:5 COFFEE</span>
+      <span class="brand-main">Psalm 23:5</span>
       <span class="brand-sub">All Glory to God</span>
      </div>
     </div>
@@ -45,50 +45,26 @@
       <span class="nav-icon"><i data-lucide="layout-grid" class="w-4 h-4"></i></span>
       <span>Dashboard</span>
      </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="clipboard-list" class="w-4 h-4"></i></span>
-      <span>Orders</span>
-     </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="coffee" class="w-4 h-4"></i></span>
-      <span>Menu</span>
-     </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="users" class="w-4 h-4"></i></span>
-      <span>Customers</span>
-     </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="receipt" class="w-4 h-4"></i></span>
-      <span>Transactions</span>
-     </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="bar-chart-3" class="w-4 h-4"></i></span>
-      <span>Reports</span>
-     </button>
-     <button type="button" class="nav-item">
-      <span class="nav-icon"><i data-lucide="settings" class="w-4 h-4"></i></span>
-      <span>Settings</span>
-     </button>
     </nav>
 
     <div class="sidebar-footer">
-     <div class="footer-mark">
-      <span class="footer-mark-crest">✦</span>
-     </div>
-     <div class="footer-copy">
-      <strong>All Glory to God</strong>
-      <span>Psalm 23:5</span>
-     </div>
+     <div class="sidebar-info-row"><i data-lucide="map-pin" class="w-4 h-4"></i><span>Calamba Branch</span></div>
+     <div class="sidebar-info-row"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="sidebar-time">--</span></div>
+     <p class="sidebar-quote">“Good coffee,<br>greater days.”</p>
     </div>
    </aside>
 
    <div class="cashier-main">
     <header class="topbar">
+     <div class="topbar-title">
+      <h1>CASHIER DASHBOARD</h1>
+      <p>Process orders, confirm payments, and serve with excellence.</p>
+     </div>
      <div class="topbar-quote">“Let all things be done decently and in order.”<span>– 1 Corinthians 14:40</span></div>
      <div class="topbar-actions">
-      <div class="branch-select" aria-label="Branch selector">
+      <div class="branch-select" aria-label="Current branch">
+       <i data-lucide="map-pin" class="w-4 h-4"></i>
        <span>Calamba Branch</span>
-       <i data-lucide="chevron-down" class="w-4 h-4"></i>
       </div>
       <div class="account-pill">
        <div class="avatar-badge">C</div>
@@ -103,22 +79,22 @@
      </div>
     </header>
 
-    <section class="page-header">
-     <h1>CASHIER DASHBOARD</h1>
-     <p>Review, process, and manage customer orders with accuracy and care.</p>
-    </section>
-
     <main class="pos-layout">
      <section class="queue-panel">
       <div class="panel-head">
        <div>
         <h2>ORDER QUEUE</h2>
-        <p>Orders are processed from the queue.</p>
+      <p>Upcoming orders from the kiosk.</p>
        </div>
        <button type="button" class="refresh-btn" onclick="loadOrders()">
         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         Refresh
        </button>
+      </div>
+      <div class="queue-filters" role="tablist" aria-label="Order type filters">
+       <button type="button" class="queue-filter active" data-filter="all" onclick="setQueueFilter('all')">All (<span id="count-all">0</span>)</button>
+       <button type="button" class="queue-filter" data-filter="Dine-in" onclick="setQueueFilter('Dine-in')">Dine-in (<span id="count-dine-in">0</span>)</button>
+       <button type="button" class="queue-filter" data-filter="Take-out" onclick="setQueueFilter('Take-out')">Take-out (<span id="count-take-out">0</span>)</button>
       </div>
       <div id="order-list" class="order-list"></div>
       <div id="empty-state" class="empty-state hidden">
@@ -128,32 +104,40 @@
      </section>
 
      <section class="detail-panel">
-      <div id="detail-panel" class="detail-card hidden">
+       <div id="detail-panel" class="detail-card hidden">
        <div class="detail-header">
         <div>
-         <p class="eyebrow">VIEWING ORDER</p>
+         <p class="eyebrow">PROCESSING ORDER</p>
          <h2 id="detail-order-number">Order #000</h2>
-         <p id="detail-order-type">Dine-in</p>
+         <p id="detail-order-type" class="order-type-badge">Dine-in</p>
         </div>
-        <span id="detail-status" class="status-badge">UNPAID</span>
+        <span id="detail-status" class="status-badge">PENDING PAYMENT</span>
        </div>
 
-       <div class="verify-banner">Verify order with customer (show order number)</div>
-
-       <div class="section-heading">
-        <h3>ITEMS</h3>
+       <div class="detail-intro">
+        <span>Verify the order details and proceed with payment.</span>
         <button type="button" class="edit-btn" onclick="openEditModal()">
          <i data-lucide="pencil" class="w-4 h-4"></i>
          Edit Order
         </button>
        </div>
 
-       <div id="detail-items" class="detail-items"></div>
+       <div class="section-heading">
+        <h3>ITEMS</h3>
+       </div>
+
+       <div class="items-table">
+        <div class="items-table-head"><span>ITEM</span><span>DETAILS</span><span>QTY</span><span>PRICE</span><span>SUBTOTAL</span></div>
+        <div id="detail-items" class="detail-items"></div>
+       </div>
 
        <div class="payment-grid">
         <div class="mini-card subtotal-card">
-         <p>SUBTOTAL</p>
+         <p>TOTAL AMOUNT</p>
          <strong id="detail-subtotal">₱0.00</strong>
+         <div class="summary-line"><span>Items</span><span id="detail-item-count">0</span></div>
+         <div class="summary-line"><span>Subtotal</span><span id="detail-subtotal-copy">₱0.00</span></div>
+         <div class="summary-total"><span>Total</span><strong id="detail-total-copy">₱0.00</strong></div>
         </div>
 
         <div class="mini-card payment-card">
@@ -175,10 +159,6 @@
         <button id="mark-paid" type="button" onclick="markAsPaid()" class="primary-btn">
          <i data-lucide="check" class="w-4 h-4"></i>
          Mark as Paid
-        </button>
-        <button type="button" onclick="clearSelection()" class="secondary-btn">
-         <i data-lucide="arrow-left" class="w-4 h-4"></i>
-         Back to Queue
         </button>
        </div>
       </div>

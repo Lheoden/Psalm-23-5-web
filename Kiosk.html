@@ -1,0 +1,941 @@
+﻿<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Coffee Shop Kiosk</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="/_sdk/element_sdk.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&amp;display=swap" rel="stylesheet">
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { poppins: ['Poppins', 'sans-serif'] },
+          colors: {
+            cream: '#F5F0E8',
+            forest: '#2D5016',
+            forestLight: '#3A6B1E',
+            warmBrown: '#8B6914',
+            goldAccent: '#C4922A',
+            cardBg: '#FFFDF8'
+          }
+        }
+      }
+    }
+  </script>
+  <script src="/_sdk/data_sdk.js" type="text/javascript"></script>
+
+<!-- =========================================================
+     CSS FILES
+     Global.css = styles shared by the whole system
+     Kiosk.css  = kiosk-specific styles
+     ========================================================= -->
+<link rel="stylesheet" href="../Assets/Css/Global.css" />
+<link rel="stylesheet" href="../Assets/Css/Kiosk.css" />
+
+</head>
+
+<body class="h-full font-poppins bg-cream">
+
+  <div class="kiosk-wrapper flex h-full">
+
+    <!-- =====================================================
+         LEFT SIDEBAR
+         ===================================================== -->
+    <aside class="w-64 bg-forest text-white flex flex-col shrink-0 kiosk-sidebar">
+
+      <!-- Logo / Brand -->
+      <div class="p-6 text-center border-b border-white/10">
+
+        <div class="w-14 h-14 rounded-full mx-auto overflow-hidden mb-2 sidebar-logo">
+          <!-- Replace image here -->
+          <img
+            src="../Assets/Images/Logo.jpg"
+            alt="Logo"
+            class="w-full h-full object-cover"
+          >
+        </div>
+
+        <h1 class="text-lg font-bold">
+          Psalm 23:5
+        </h1>
+
+        <p class="text-xs text-white/60">
+          All Glory to God
+        </p>
+
+      </div>
+
+
+      <!-- Navigation -->
+      <nav class="flex-1 p-4 space-y-3 kiosk-nav">
+
+        <a
+          onclick="showScreen('main')"
+          class="active flex items-center gap-3 px-4 py-3 rounded-xl bg-white/15 text-white font-medium"
+        >
+          <i
+            data-lucide="coffee"
+            class="w-5 h-5"
+          ></i>
+
+          <span>Menu</span>
+        </a>
+
+
+        <!-- Opens the mood-selection screen -->
+        <button
+          onclick="openMoodFlow()"
+          class="w-full text-left flex items-center gap-3 px-4 py-3 mt-4 rounded-xl font-medium"
+        >
+          <i
+            data-lucide="sparkles"
+            class="w-5 h-5"
+          ></i>
+
+          <span>Order by Mood</span>
+        </button>
+
+
+        <button
+          type="button"
+          class="w-full text-left flex items-center gap-3 px-4 py-3 rounded-xl text-white/75 font-medium kiosk-about"
+        >
+          <i
+            data-lucide="info"
+            class="w-5 h-5"
+          ></i>
+
+          <span>About Us</span>
+        </button>
+
+      </nav>
+
+
+      <!-- How to Order -->
+      <div class="p-4 border-t border-white/10 kiosk-sidebar-footer">
+
+        <h3 class="text-xs font-semibold text-white/50 uppercase mb-3">
+          How to Order
+        </h3>
+
+        <div class="space-y-2 text-xs text-white/70">
+
+          <div class="flex items-center gap-2">
+            <span
+              class="w-5 h-5 bg-goldAccent rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            >
+              1
+            </span>
+
+            Browse menu
+          </div>
+
+
+          <div class="flex items-center gap-2">
+            <span
+              class="w-5 h-5 bg-goldAccent rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            >
+              2
+            </span>
+
+            Add to cart and customize
+          </div>
+
+
+          <div class="flex items-center gap-2">
+            <span
+              class="w-5 h-5 bg-goldAccent rounded-full flex items-center justify-center text-[10px] font-bold text-white"
+            >
+              3
+            </span>
+
+            Check out
+          </div>
+
+        </div>
+
+      </div>
+
+
+      <!-- Location / Time / Quote -->
+      <div class="kiosk-location-footer">
+
+        <div>
+          <i
+            data-lucide="map-pin"
+            class="w-4 h-4"
+          ></i>
+
+          <span id="sidebar-branch">
+            Calamba Branch
+          </span>
+        </div>
+
+
+        <div>
+          <i
+            data-lucide="clock-3"
+            class="w-4 h-4"
+          ></i>
+
+          <span id="sidebar-time"></span>
+        </div>
+
+
+        <p>
+          “Good coffee,<br>
+          greater days.”
+        </p>
+
+      </div>
+
+    </aside>
+  </aside>
+
+<!-- =====================================================
+     MAIN CONTENT
+     ===================================================== -->
+<main class="flex-1 flex flex-col overflow-hidden">
+
+  <!-- Header -->
+  <header
+    class="px-8 py-5 flex items-center justify-between border-b border-forest/10 bg-white/40 kiosk-header"
+  >
+
+    <div>
+      <h2
+        id="greeting"
+        class="text-2xl font-bold text-forest"
+      >
+        <span class="greeting-lead">
+          Good day!
+        </span>
+
+        <span class="greeting-subline">
+          What would you like to have?
+        </span>
+      </h2>
+    </div>
+
+    <div class="kiosk-header-actions">
+      <div class="hero-decoration">
+        More than coffee,<br>
+        <em>a reminder.</em>
+      </div>
+      <button type="button" class="start-over-button" onclick="startOver()">
+        <i data-lucide="rotate-ccw" class="w-4 h-4"></i>
+        <span>Start Over</span>
+      </button>
+    </div>
+
+  </header>
+
+
+  <!-- ===================================================
+       MAIN MENU SCREEN
+       =================================================== -->
+  <div
+    id="main-menu-screen"
+    class="flex-1 flex flex-col overflow-hidden"
+  >
+
+    <!-- Promo Section -->
+    <section
+      class="px-8 py-4 bg-white/70 border-b border-forest/10 promo-section"
+    >
+
+      <div class="promo-hero">
+
+        <!-- Promo Text -->
+        <div class="promo-copy">
+
+          <p>
+            Special Offer
+          </p>
+
+          <h3>
+            Coffee Combo
+          </h3>
+
+          <span>
+            Buy 2 coffees, get one free<br>
+            on selected drinks.
+          </span>
+
+          <button
+            type="button"
+            class="promo-button"
+          >
+            View Deals
+            <span aria-hidden="true">→</span>
+          </button>
+
+        </div>
+
+
+        <!-- Promo Image -->
+        <div class="hero-product-image">
+          <!-- Replace image here -->
+          <span>
+            PROMO<br>
+            IMAGE
+          </span>
+        </div>
+
+
+        <!-- Discount Badge -->
+        <div class="promo-badge">
+          20%<br>
+          <small>OFF</small>
+        </div>
+
+
+        <!-- Promo Decoration -->
+        <div class="promo-decoration">
+          Good Coffee<br>
+          Greater Days
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- =================================================
+         CATEGORY TABS + SEARCH
+         ================================================= -->
+    <div class="px-8 py-4 flex gap-2 flex-wrap kiosk-toolbar">
+
+      <!-- Hot / Iced Coffee -->
+      <button
+        onclick="filterCategory('coffee')"
+        class="cat-tab tab-active px-5 py-2.5 rounded-full text-sm font-medium transition"
+        data-cat="coffee"
+      >
+        <span class="cat-icon">
+          <i
+            data-lucide="coffee"
+            class="w-4 h-4"
+          ></i>
+        </span>
+
+        <span>
+          Hot / Iced Coffee
+        </span>
+      </button>
+
+
+      <!-- Frappe -->
+      <button
+        onclick="filterCategory('frappe')"
+        class="cat-tab px-5 py-2.5 rounded-full text-sm font-medium bg-white text-forest/70 hover:bg-forest/10 transition"
+        data-cat="frappe"
+      >
+        <span class="cat-icon">
+          <i
+            data-lucide="cup-soda"
+            class="w-4 h-4"
+          ></i>
+        </span>
+
+        <span>
+          Frappe
+        </span>
+      </button>
+
+
+      <!-- Non-Coffee -->
+      <button
+        onclick="filterCategory('other')"
+        class="cat-tab px-5 py-2.5 rounded-full text-sm font-medium bg-white text-forest/70 hover:bg-forest/10 transition"
+        data-cat="other"
+      >
+        <span class="cat-icon">
+          <i
+            data-lucide="milk"
+            class="w-4 h-4"
+          ></i>
+        </span>
+
+        <span>
+          Non-Coffee
+        </span>
+      </button>
+
+
+      <!-- Cookies & Pasta -->
+      <button
+        onclick="filterCategory('food')"
+        class="cat-tab px-5 py-2.5 rounded-full text-sm font-medium bg-white text-forest/70 hover:bg-forest/10 transition"
+        data-cat="food"
+      >
+        <span class="cat-icon">
+          <i
+            data-lucide="cookie"
+            class="w-4 h-4"
+          ></i>
+        </span>
+
+        <span>
+          Cookies &amp; Pasta
+        </span>
+      </button>
+
+
+      <!-- Search -->
+      <label class="kiosk-search">
+
+        <i
+          data-lucide="search"
+          class="w-4 h-4"
+        ></i>
+
+        <input
+          id="product-search"
+          type="search"
+          placeholder="Search drinks..."
+          aria-label="Search drinks"
+        >
+
+      </label>
+
+    </div>
+
+
+    <!-- =================================================
+         PRODUCT GRID
+         ================================================= -->
+    <div class="flex-1 overflow-auto px-8 pb-6">
+
+      <!-- Kiosk.js inserts the products here dynamically using product data. -->
+      <div
+        id="product-grid"
+        class="grid grid-cols-2 lg:grid-cols-3 gap-5"
+      ></div>
+
+    </div>
+
+  </div>
+
+
+  <!-- ===================================================
+       MOOD SCREEN
+       =================================================== -->
+  <div
+    id="mood-screen"
+    class="hidden flex-1 overflow-auto px-8 pb-6 bg-cream"
+  >
+    <div class="max-w-5xl mx-auto">
+
+        <button onclick="showScreen('main')" class="back-to-menu">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Menu
+        </button>
+
+        <div class="rounded-3xl bg-white p-6 shadow-lg border border-forest/10">
+
+            <p class="text-xs uppercase tracking-[0.2em] text-forest/50 font-semibold">
+                Mood-Based Ordering
+            </p>
+
+            <h3 class="mt-3 text-3xl font-bold text-forest">
+                How are you feeling today?
+            </h3>
+
+            <p class="text-sm text-forest/60 mt-2 max-w-2xl">
+                Select a mood and let us recommend the perfect drink from Psalm 23:5 Coffee.
+            </p>
+
+            <!-- Kiosk.js generates the mood buttons/cards here. -->
+             <div id="mood-cards"
+                 class="mt-6 grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-3 gap-4">
+            </div>
+
+        </div>
+
+    </div>
+
+</div>
+   <div id="recommendation-screen" class="hidden flex-1 overflow-auto px-8 pb-6 bg-cream">
+
+    <div class="max-w-5xl mx-auto">
+
+        <button onclick="showScreen('mood')" class="recommendation-back">
+            <i data-lucide="arrow-left" class="w-4 h-4"></i>
+            Back to Mood menu
+        </button>
+
+        <div class="rounded-3xl bg-white p-6 shadow-lg border border-forest/10">
+            <h3 class="mt-3 text-3xl font-bold text-forest">
+                Recommended for you
+            </h3>
+
+            <p id="selected-mood-title" class="text-sm text-forest/60 mt-2">
+                Mood suggestions chosen for your current feeling.
+            </p>
+
+            <!-- Kiosk.js inserts mood-based product recommendations here. -->
+            <div id="recommendation-grid" class="mt-6 grid grid-cols-1 md:grid-cols-2 gap-5"></div>
+
+        </div>
+
+    </div>
+
+</div>
+   </main>
+
+<!-- =====================================================
+     RIGHT PANEL / CART
+     ===================================================== -->
+<aside class="w-80 bg-white border-l border-forest/10 flex flex-col shrink-0 kiosk-cart-panel">
+
+  <!-- Cart Header -->
+  <div class="p-5 border-b border-forest/10 kiosk-cart-header">
+
+    <h3 class="text-lg font-bold text-forest flex items-center gap-2">
+      <i
+        data-lucide="shopping-cart"
+        class="w-5 h-5"
+      ></i>
+
+      My Order
+    </h3>
+
+    <button
+      type="button"
+      id="clear-cart"
+      class="clear-cart-button"
+      onclick="clearCart()"
+    >
+      Clear All
+    </button>
+
+  </div>
+  <!-- ===================================================
+       CART CONTENT
+       =================================================== -->
+
+  <!-- Kiosk.js dynamically renders cart items inside this panel. -->
+  <div
+    id="cart-content"
+    class="flex-1 overflow-auto p-5"
+  >
+    <!-- Empty Cart State -->
+    <div
+      id="cart-empty"
+      class="flex flex-col items-center justify-center h-full text-center"
+    >
+
+      <div class="w-20 h-20 bg-cream rounded-full flex items-center justify-center mb-4">
+        <i
+          data-lucide="shopping-cart"
+          class="w-10 h-10 text-forest/30"
+        ></i>
+      </div>
+
+      <p class="text-sm text-forest/50 font-medium">
+        Your cart is empty
+      </p>
+
+      <p class="text-xs text-forest/40 mt-1">
+        Add delicious items<br>
+        from the menu to get started.
+      </p>
+
+    </div>
+
+
+    <!-- Cart Items -->
+    <div
+      id="cart-items"
+      class="space-y-3 hidden"
+    ></div>
+
+  </div>
+
+
+  <!-- ===================================================
+       CART FOOTER
+       =================================================== -->
+  <div
+    id="cart-footer"
+    class="p-5 border-t border-forest/10"
+  >
+
+    <div class="flex justify-between text-base font-bold mb-4">
+
+      <span class="text-forest">
+        Total
+      </span>
+
+      <span
+        id="total"
+        class="text-forest"
+      >
+        ₱0.00
+      </span>
+
+    </div>
+
+
+    <button
+      id="checkout-button"
+      onclick="checkoutCart()"
+      disabled
+      class="w-full py-3.5 bg-forest text-white rounded-2xl font-semibold hover:bg-forestLight transition text-base"
+    >
+      Proceed to Checkout
+      <span aria-hidden="true">→</span>
+    </button>
+
+
+    <span
+      id="subtotal"
+      class="sr-only"
+    >
+      ₱0.00
+    </span>
+
+  </div>
+
+
+  <!-- Rewards -->
+  <div class="p-5 border-t border-forest/10 bg-cream/50">
+    <div class="flex items-center gap-3">
+    </div>
+  </div>
+
+</aside>
+
+
+</div>
+
+
+<!-- =====================================================
+     CUSTOMIZATION MODAL
+     ===================================================== -->
+<div
+  id="customize-modal"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden"
+>
+
+  <div class="bg-white rounded-3xl p-6 w-96 max-w-[90%] fade-in">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-5">
+
+      <h3
+        id="modal-title"
+        class="text-lg font-bold text-forest"
+      >
+        Customize
+      </h3>
+
+      <button
+        onclick="closeModal()"
+        class="w-8 h-8 rounded-full bg-cream flex items-center justify-center"
+      >
+        <i
+          data-lucide="x"
+          class="w-4 h-4 text-forest"
+        ></i>
+      </button>
+
+    </div>
+
+
+    <!-- Modal Content -->
+    <div class="space-y-5">
+
+      <!-- Drink Type -->
+      <div>
+
+        <p class="text-sm font-medium text-forest mb-2">
+          Drink Type
+        </p>
+
+        <div class="flex gap-2">
+
+          <button
+            onclick="selectTemp(this,'Hot')"
+            class="temp-btn flex-1 py-2.5 rounded-xl border-2 border-forest bg-forest text-sm font-medium text-white"
+          >
+            Hot
+          </button>
+
+          <button
+            onclick="selectTemp(this,'Iced')"
+            class="temp-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/70 hover:border-forest/40"
+          >
+            Iced
+          </button>
+
+        </div>
+
+      </div>
+
+
+      <!-- Sugar Level -->
+      <div>
+
+        <p class="text-sm font-medium text-forest mb-2">
+          Sugar Level
+        </p>
+
+        <div class="flex gap-2">
+
+          <button
+            onclick="selectSugar(this,0)"
+            data-sugar="0"
+            class="sugar-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/60 hover:border-forest/40"
+          >
+            0%
+          </button>
+
+          <button
+            onclick="selectSugar(this,25)"
+            data-sugar="25"
+            class="sugar-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/60 hover:border-forest/40"
+          >
+            25%
+          </button>
+
+          <button
+            onclick="selectSugar(this,50)"
+            data-sugar="50"
+            class="sugar-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/60 hover:border-forest/40"
+          >
+            50%
+          </button>
+
+          <button
+            onclick="selectSugar(this,75)"
+            data-sugar="75"
+            class="sugar-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/60 hover:border-forest/40"
+          >
+            75%
+          </button>
+
+          <button
+            onclick="selectSugar(this,100)"
+            data-sugar="100"
+            class="sugar-btn flex-1 py-2.5 rounded-xl border-2 border-forest/20 bg-white text-sm font-medium text-forest/60 hover:border-forest/40"
+          >
+            100%
+          </button>
+
+        </div>
+
+
+        <div class="text-sm text-forest/60 mt-2">
+          Selected:
+          <span id="sugar-value">
+            50%
+          </span>
+        </div>
+
+      </div>
+
+
+      <!-- Bible Verse -->
+      <div
+        id="modal-verse"
+        class="hidden rounded-3xl bg-forest/10 p-4 text-sm italic text-forest/70"
+      >
+      </div>
+
+    </div>
+
+
+    <!-- Done Button -->
+    <button
+      onclick="confirmCustomization()"
+      class="w-full mt-6 py-3 bg-forest text-white rounded-2xl font-semibold hover:bg-forestLight transition"
+    >
+      Done
+    </button>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     CONFIRM ORDER MODAL
+     ===================================================== -->
+<div
+  id="confirm-order-modal"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden"
+>
+
+  <div class="bg-white rounded-3xl p-6 w-96 max-w-[90%] fade-in">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-5">
+
+      <h3 class="text-lg font-bold text-forest">
+        Confirm Order
+      </h3>
+
+      <button
+        onclick="closeConfirmOrder()"
+        class="w-8 h-8 rounded-full bg-cream flex items-center justify-center"
+      >
+        <i
+          data-lucide="x"
+          class="w-4 h-4 text-forest"
+        ></i>
+      </button>
+
+    </div>
+
+
+    <!-- Confirm Order Content -->
+    <div class="space-y-4">
+
+      <p class="text-sm text-forest/70">
+        Please review your cart before checking out.
+      </p>
+
+
+      <div class="rounded-3xl bg-cream p-4 border border-forest/10">
+
+        <p class="text-sm text-forest/60 mb-2">
+          Items in cart:
+          <span
+            id="order-count"
+            class="font-semibold text-forest"
+          >
+            0
+          </span>
+        </p>
+
+
+        <p class="text-sm text-forest/60 mb-4">
+          Total:
+          <span
+            id="order-total"
+            class="font-semibold text-forest"
+          >
+            ₱0.00
+          </span>
+        </p>
+
+
+        <div
+          id="order-items-list"
+          class="space-y-3 text-left"
+        ></div>
+
+      </div>
+
+
+      <button
+        onclick="confirmOrder()"
+        class="w-full py-3.5 bg-forest text-white rounded-2xl font-semibold hover:bg-forestLight transition"
+      >
+        Checkout
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+
+
+<!-- =====================================================
+     ORDER CREATED MODAL
+     ===================================================== -->
+<div
+  id="order-created-modal"
+  class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden"
+>
+
+  <div class="bg-white rounded-3xl p-6 w-96 max-w-[90%] fade-in">
+
+    <!-- Modal Header -->
+    <div class="flex justify-between items-center mb-5">
+
+      <h3 class="text-lg font-bold text-forest">
+        Order Created
+      </h3>
+
+      <button
+        onclick="closeOrderCreated()"
+        class="w-8 h-8 rounded-full bg-cream flex items-center justify-center"
+      >
+        <i
+          data-lucide="x"
+          class="w-4 h-4 text-forest"
+        ></i>
+      </button>
+
+    </div>
+
+
+    <!-- Order Created Content -->
+    <div class="space-y-5 text-center">
+
+      <div class="rounded-3xl bg-forest/5 p-6 border border-forest/10">
+
+        <p class="text-xs uppercase tracking-[0.2em] text-forest/50 font-semibold mb-3">
+          Order Number
+        </p>
+
+        <p
+          id="generated-order-number"
+          class="text-4xl font-black text-forest"
+        ></p>
+
+      </div>
+
+
+      <p class="text-sm text-forest/70">
+        Proceed to cashier for payment
+      </p>
+
+
+      <button
+        onclick="closeOrderCreated()"
+        class="w-full py-3.5 bg-forest text-white rounded-2xl font-semibold hover:bg-forestLight transition"
+      >
+        Done
+      </button>
+
+    </div>
+
+  </div>
+
+</div>
+  
+ <script>(function(){function c(){var b=a.contentDocument||a.contentWindow.document;if(b){var d=b.createElement('script');d.innerHTML="window.__CF$cv$params={r:'9f5583fde679d2ac',t:'MTc3NzcwOTA3MS4wMDAwMDA='};var a=document.createElement('script');a.nonce='';a.src='/cdn-cgi/challenge-platform/scripts/jsd/main.js';document.getElementsByTagName('head')[0].appendChild(a);";b.getElementsByTagName('head')[0].appendChild(d)}}if(document.body){var a=document.createElement('iframe');a.height=1;a.width=1;a.style.position='absolute';a.style.top=0;a.style.left=0;a.style.border='none';a.style.visibility='hidden';document.body.appendChild(a);if('loading'!==document.readyState)c();else if(window.addEventListener)document.addEventListener('DOMContentLoaded',c);else{var e=document.onreadystatechange||function(){};document.onreadystatechange=function(b){e(b);'loading'!==document.readyState&&(document.onreadystatechange=e,c())}}}})();</script>
+    <div id="start-over-modal" class="fixed inset-0 bg-black/40 flex items-center justify-center z-50 hidden">
+     <div class="bg-white rounded-3xl p-6 w-96 max-w-[90%] fade-in">
+      <div class="flex justify-between items-center mb-4">
+    <h3 class="text-lg font-bold text-forest">Start over?</h3>
+    <button type="button" onclick="closeStartOverModal()" class="w-8 h-8 rounded-full bg-cream flex items-center justify-center" aria-label="Close start over dialog">
+     <i data-lucide="x" class="w-4 h-4 text-forest"></i>
+    </button>
+      </div>
+      <p class="text-sm text-forest/70">Your current order will be cleared and you will return to the welcome screen.</p>
+      <div class="flex gap-3 mt-6">
+    <button type="button" onclick="closeStartOverModal()" class="flex-1 py-3 border border-forest/15 bg-white text-forest rounded-2xl font-semibold">Continue Ordering</button>
+    <button type="button" onclick="confirmStartOver()" class="flex-1 py-3 bg-forest text-white rounded-2xl font-semibold hover:bg-forestLight transition">Start Over</button>
+      </div>
+     </div>
+    </div>
+
+    <!-- =========================================================
+      JAVASCRIPT FILES
+       Global.js = shared functions
+       Kiosk.js  = kiosk logic: products, moods, cart, checkout, etc.
+       Keep these at the bottom so the HTML loads first.
+       ========================================================= -->
+  <script src="../Assets/Js/Global.js"></script>
+  <script src="../Assets/Js/Kiosk.js"></script>
+ </body>
+</html>

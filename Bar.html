@@ -1,0 +1,60 @@
+<!doctype html>
+<html lang="en" class="h-full">
+ <head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Bar Staff Dashboard</title>
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { poppins: ['Poppins', 'sans-serif'] },
+          colors: {
+            cream: '#F5F0E8',
+            forest: '#2D5016',
+            forestLight: '#3A6B1E',
+            goldAccent: '#C4922A',
+            ready: '#16A34A',
+            preparing: '#F59E0B',
+            paidGray: '#64748B'
+          }
+        }
+      }
+    }
+  </script>
+ 
+  <link rel="stylesheet" href="Assets/Css/Global.css" />
+  <link rel="stylesheet" href="Assets/Css/Bar.css" />
+ </head>
+ <body class="bar-body">
+  <div class="bar-app">
+   <aside class="bar-sidebar">
+    <div class="bar-brand"><img src="Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" /><strong>Psalm 23:5</strong><span>All Glory to God</span></div>
+    <nav class="bar-nav" aria-label="Bar navigation">
+     <button type="button" class="bar-nav-item active"><i data-lucide="coffee" class="w-5 h-5"></i><span>Bar Station</span></button>
+     <button type="button" class="bar-nav-item"><i data-lucide="boxes" class="w-5 h-5"></i><span>Inventory</span></button>
+    </nav>
+    <div class="bar-sidebar-footer"><div><i data-lucide="map-pin" class="w-4 h-4"></i>Calamba Branch</div><div><i data-lucide="clock-3" class="w-4 h-4"></i><span id="bar-time">--</span></div><p>“Good coffee,<br>greater days.”</p></div>
+   </aside>
+   <div class="bar-main">
+    <header class="bar-header">
+     <div><h1>Barista Station</h1><p>Prepare paid orders. Keep the good coffee coming.</p></div>
+     <div class="bar-header-actions"><div class="live-sync"><span></span><div><strong>Live Sync</strong><small>Orders are updated in real time.</small></div></div><div class="bar-branch"><i data-lucide="map-pin" class="w-4 h-4"></i>Calamba Branch</div><div class="bar-account"><b>BS</b><div><strong>Bar Staff</strong><small>Bar Staff</small></div></div><button type="button" class="bar-logout" aria-label="Logout"><i data-lucide="log-out" class="w-4 h-4"></i></button></div>
+    </header>
+    <main class="bar-workspace">
+     <section class="bar-queue-panel"><div class="bar-panel-head"><div><div class="bar-section-title"><h2>Paid Order Queue</h2><span id="queue-count">0</span></div><p>Orders ready for preparation (paid).</p></div><button type="button" onclick="loadOrders()" class="bar-refresh"><i data-lucide="refresh-cw" class="w-4 h-4"></i>Refresh</button></div><div id="order-list" class="bar-order-list"></div><div id="queue-empty" class="bar-empty hidden"><i data-lucide="coffee" class="w-8 h-8"></i><p>No paid orders in queue</p><span>Orders will appear here after Cashier confirms payment.</span></div></section>
+     <section class="bar-detail-column"><div class="bar-detail-top"><div><p class="bar-eyebrow">SELECTED ORDER</p><h2 id="detail-title">Select an order</h2></div><button type="button" onclick="showPanel('details')" id="tab-details" class="hidden">Details</button></div><div id="detail-panel" class="bar-detail-panel hidden"><div class="bar-order-heading"><div><h2>Order #<span id="order-number">0000</span></h2><p id="order-time"></p></div><div class="bar-statuses"><span id="order-type" class="order-type-badge">Order</span><span id="order-status" class="status-paid">PAID</span></div></div><div class="bar-items-heading"><h3>Items (<span id="detail-count">0</span>)</h3></div><div id="items-list" class="bar-items-list"></div><div class="bar-instructions"><i data-lucide="clipboard-list" class="w-4 h-4"></i><div><strong>Special Instructions</strong><p id="special-instructions">No special instructions</p></div></div><div class="bar-action-row"><button id="btn-start" type="button" onclick="startPreparing()" class="bar-start-button"><i data-lucide="coffee" class="w-5 h-5"></i>Start Preparing</button><button id="btn-ready" type="button" onclick="markReady()" class="bar-ready-button"><i data-lucide="check" class="w-5 h-5"></i>Mark as Ready</button></div></div><div id="detail-empty" class="bar-detail-empty"><i data-lucide="clipboard-list" class="w-10 h-10"></i><p>Select an order from the queue</p><span>Order details and preparation actions appear here.</span></div></section>
+    <aside class="inventory-panel"><div class="bar-panel-head"><div><h2>Inventory Overview</h2><p>Key ingredients at a glance.</p></div><button type="button" class="inventory-view-all">View All →</button></div><div id="inventory-list" class="inventory-list"></div><div id="low-stock-alert" class="low-stock-alert hidden"><i data-lucide="alert-triangle" class="w-5 h-5"></i><div><strong>Low Stock Alert</strong><p>Some items are running low.<br>Inform the admin for replenishment.</p></div></div></aside>
+    </main>
+   </div>
+  </div>
+  <div id="ready-toast" class="bar-toast hidden"><p id="toast-text">Order ready.</p></div>
+  
+ 
+  <script src="Assets/Js/Global.js"></script>
+  <script src="Assets/Js/Bar.js"></script>
+ </body>
+</html>

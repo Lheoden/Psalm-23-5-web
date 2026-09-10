@@ -1,0 +1,174 @@
+/* style.css */
+@import url("https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600&display=swap");
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+}
+
+body, html {
+    height: 100%;
+    background-color: #000;
+    overflow: hidden;
+    cursor: pointer;
+    touch-action: manipulation;
+}
+
+.splash-container {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+    /* Replace with your coffee cups background image */
+   background: url('../Images/Background.jpg') no-repeat center center/cover;
+    position: relative;
+}
+
+/* Darkens the background image to make text pop */
+.overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.7);
+    z-index: 1;
+}
+
+.content {
+    position: relative;
+    z-index: 2;
+    color: white;
+}
+
+.logo-circle {
+    width: 180px;
+    height: 180px;
+    border-radius: 50%;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden; 
+    background-color: #0c3327; /* Dark green background */
+    border: 3px solid white;
+    margin: 0 auto 20px;
+}
+
+.logo-img {
+    /* Lowering the width creates the 'padding' effect */
+    width: 70%;        
+    height: auto;      
+    object-fit: contain;
+    display: block;
+}
+
+.brand-name {
+    font-size: 3rem;
+    font-weight: 700;
+    margin-bottom: 5px;
+    letter-spacing: 1px;
+}
+
+.tagline {
+    font-style: italic;
+    font-size: 0.9rem;
+    color: #ccc;
+    margin-bottom: 100px;
+}
+
+.footer-prompt {
+    font-size: 1.2rem;
+    color: #eee;
+    animation: pulse 2s infinite;
+}
+
+/* Subtle fading animation for the 'Touch anywhere' text */
+@keyframes pulse {
+    0% { opacity: 0.4; }
+    50% { opacity: 1; }
+    100% { opacity: 0.4; }
+}
+
+/* Screen handling */
+.hidden {
+    display: none !important;
+}
+
+#selection-screen {
+    height: 100vh;
+    width: 100%;
+    background: radial-gradient(circle, #0c3327 0%, #061a14 100%);
+    display: flex;
+    justify-content: center; /* Centers horizontally */
+    align-items: center;     /* Centers vertically */
+    color: #000000;
+}
+
+.selection-content {
+    display: flex;
+    flex-direction: column;  /* Stack title on top of cards */
+    align-items: center;      /* Force the title and cards to center-align */
+    text-align: center;
+}
+
+.selection-title {
+    font-size: 1.8rem;
+    margin-bottom: 40px;      /* Space between title and cards */
+    font-weight: 700;
+    width: 100%;              /* Ensures it takes full width for centering */
+    color: #f2e9dc; /* Soft cream */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 1.5rem;
+}
+
+.card-container {
+    display: flex;
+    gap: 30px;                /* Adjusted gap for better look */
+    justify-content: center;
+}
+
+.card {
+    width: 220px;
+    height: 180px;
+    border-radius: 15px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: transform 0.2s, box-shadow 0.2s;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+    background-color: #fdfaf7; /* Off-white cream */
+    border: none;
+    width: 240px; /* Slightly wider */
+    height: 200px;
+    transition: all 0.3s ease;
+}
+
+.card:hover {
+   transform: translateY(-10px);
+    box-shadow: 0 15px 30px rgba(0,0,0,0.4);
+    background-color: #ffffff;
+}
+
+.card-white {
+    background-color: #ffffff;
+}
+
+.card-tan {
+    background-color: #ffffff;
+}
+
+.icon {
+    font-size: 2.5rem;
+    margin-bottom: 10px;
+}
+
+.card p {
+    color: #0c3327; /* Dark green text inside white card */
+    margin-top: 15px;
+}

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Psalm 23:5 Coffee</title>
+   <link rel="stylesheet" href="../Assets/Css/Opening.css">
+</head>
+<body onclick="handleTouch()">
+
+    <div class="splash-container">
+        <div class="overlay"></div>
+
+        <div class="content">
+            <div class="logo-circle">
+                <img src="../Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee" class="logo-img">
+            </div>
+            
+            <h1 class="brand-name">Psalm 23:5 Coffee</h1>
+            <p class="tagline">"My cup overflows with your blessings."</p>
+            
+            <div class="footer-prompt">
+                <p>Touch anywhere</p>
+            </div>
+        </div>
+    </div>
+    <div id="selection-screen" class="screen hidden">
+    <div class="selection-content">
+        <h2 class="selection-title">Dine In or Take Out?</h2>
+        
+        <div class="card-container">
+    <div class="card card-white" onclick="selectOption('Dine In', event)">
+        <div class="icon">🍴</div> 
+        <p>Dine In</p>
+    </div>
+
+    <div class="card card-tan" onclick="selectOption('Take Out', event)">
+        <div class="icon">🛍️</div>
+        <p>Take Out</p>
+    </div>
+</div>
+    </div>
+</div>
+
+   <script src="../Assets/Js/Opening.js"></script>
+</body>
+</html>

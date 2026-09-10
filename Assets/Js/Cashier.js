@@ -5,30 +5,7 @@ let paidOrders = [];
 let selectedOrder = null;
 let paymentMethod = 'Cash';
 let editOrderCopy = null;
-
-const sampleOrders = [
-  {
-    id: '#01',
-    number: '#01',
-    type: 'Dine-in',
-    status: 'UNPAID',
-    timestamp: new Date().toISOString(),
-    items: [
-      { id: 'i1', name: 'Americano', qty: 1, size: 'Medium', temp: 'Hot', sugar: '25%', addons: ['Extra Shot'], price: 120 },
-      { id: 'i2', name: 'Cookie', qty: 2, size: '-', temp: '-', sugar: '-', addons: [], price: 55 }
-    ]
-  },
-  {
-    id: '#02',
-    number: '#02',
-    type: 'Take-out',
-    status: 'UNPAID',
-    timestamp: new Date(Date.now() - 1200000).toISOString(),
-    items: [
-      { id: 'i3', name: 'Latte', qty: 1, size: 'Large', temp: 'Iced', sugar: '50%', addons: ['Vanilla'], price: 150 }
-    ]
-  }
-];
+let queueFilter = 'all';
 
 function formatOrderNumber(value) {
   if (value === null || value === undefined) return '—';
@@ -45,6 +22,19 @@ function formatTime(value) {
 
 function formatAmount(value) {
   return `₱${Number(value || 0).toFixed(2)}`;
+}
+
+function updateSidebarTime() {
+  const element = document.getElementById('sidebar-time');
+  if (element) {
+    element.textContent = new Date().toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      year: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
+  }
 }
 
 function getItemImage(name) {
@@ -80,9 +70,8 @@ function loadOrders() {
 }
 
 function loadData() {
-  unpaidOrders = JSON.parse(localStorage.getItem(STORAGE_UNPAID) || 'null') || sampleOrders;
+  unpaidOrders = JSON.parse(localStorage.getItem(STORAGE_UNPAID) || 'null') || [];
   paidOrders = JSON.parse(localStorage.getItem(STORAGE_PAID) || 'null') || [];
-  saveData();
   renderOrderList();
   if (!selectedOrder) {
     clearSelection();
@@ -107,7 +96,15 @@ function renderOrderList() {
   const emptyState = document.getElementById('empty-state');
   list.innerHTML = '';
 
-  const queue = (unpaidOrders || []).filter(order => order.status === 'UNPAID');
+  const queue = (unpaidOrders || []).filter(order => {
+    const isUnpaid = order.status === 'UNPAID';
+    const matchesFilter = queueFilter === 'all' || order.type === queueFilter;
+    return isUnpaid && matchesFilter;
+  });
+  const allUnpaid = (unpaidOrders || []).filter(order => order.status === 'UNPAID');
+  document.getElementById('count-all').textContent = allUnpaid.length;
+  document.getElementById('count-dine-in').textContent = allUnpaid.filter(order => order.type === 'Dine-in').length;
+  document.getElementById('count-take-out').textContent = allUnpaid.filter(order => order.type === 'Take-out').length;
   queue.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   if (!queue.length) {
@@ -127,7 +124,7 @@ function renderOrderList() {
       ? order.items.map(item => `${item.qty}× ${item.name}`).join(', ')
       : 'No items';
 
-    const total = order.items.reduce((sum, item) => sum + item.qty * item.price, 0);
+    const total = calculateTotal(order);
 
     card.innerHTML = `
       <div class="order-card-main">
@@ -148,6 +145,14 @@ function renderOrderList() {
   });
 }
 
+function setQueueFilter(filter) {
+  queueFilter = filter;
+  document.querySelectorAll('.queue-filter').forEach(button => {
+    button.classList.toggle('active', button.dataset.filter === filter);
+  });
+  renderOrderList();
+}
+
 function selectOrder(orderId) {
   selectedOrder = unpaidOrders.find(order => order.id === orderId);
   if (!selectedOrder) return;
@@ -163,14 +168,13 @@ function renderDetails() {
   const orderNumberText = `Order ${formatOrderNumber(selectedOrder.number || selectedOrder.id)}`;
   document.getElementById('detail-order-number').textContent = orderNumberText;
   document.getElementById('detail-order-type').textContent = selectedOrder.type;
-  document.getElementById('detail-status').textContent = selectedOrder.status || 'UNPAID';
+  document.getElementById('detail-status').textContent = 'PENDING PAYMENT';
 
   const detailItems = document.getElementById('detail-items');
   detailItems.innerHTML = selectedOrder.items.map(item => {
-    const itemPrice = (item.qty * item.price).toFixed(2);
-    const itemDetails = [item.size, item.temp, item.sugar].filter(value => value && value !== '-').join(' · ');
-    const addonText = item.addons && item.addons.length ? item.addons.map(addon => `${addon}`).join(', ') : '';
-    const addonMarkup = addonText ? `<p class="item-addon">Add-on: ${addonText}</p>` : '';
+    const itemPrice = Number(item.price || 0).toFixed(2);
+    const itemSubtotal = (item.qty * item.price).toFixed(2);
+    const itemDetails = [item.size, item.temp, item.sugar && `${item.sugar} Sugar`].filter(value => value && value !== '-').join(' · ');
     const imageSrc = getItemImage(item.name);
 
     return `
@@ -178,17 +182,22 @@ function renderDetails() {
         <div class="item-main">
           <img class="item-thumb" src="${imageSrc}" alt="${item.name}" onerror="this.src='../Assets/Images/Logo.jpg'" />
           <div class="item-copy">
-            <div class="item-name">${item.name} × ${item.qty}</div>
+            <div class="item-name">${item.name}</div>
             <div class="item-meta">${itemDetails || 'Standard'}</div>
-            ${addonMarkup}
           </div>
         </div>
+        <div class="item-qty">${item.qty}</div>
         <div class="item-price">₱${itemPrice}</div>
+        <div class="item-subtotal">₱${itemSubtotal}</div>
       </div>
     `;
   }).join('');
 
-  document.getElementById('detail-subtotal').textContent = `₱${calculateTotal(selectedOrder).toFixed(2)}`;
+  const total = calculateTotal(selectedOrder);
+  document.getElementById('detail-subtotal').textContent = formatAmount(total);
+  document.getElementById('detail-subtotal-copy').textContent = formatAmount(total);
+  document.getElementById('detail-total-copy').textContent = formatAmount(total);
+  document.getElementById('detail-item-count').textContent = selectedOrder.items.reduce((sum, item) => sum + item.qty, 0);
   document.getElementById('cash-received').value = selectedOrder.paidAmount || '';
   updatePaymentButtons();
 }
@@ -226,7 +235,6 @@ function renderModalItems() {
         <div class="modal-item-copy">
           <div class="modal-item-name">${item.name}</div>
           <div class="modal-item-meta">${[item.size, item.temp, item.sugar].filter(value => value && value !== '-').join(' · ') || 'Standard'}</div>
-          ${item.addons && item.addons.length ? `<div class="modal-item-meta">Add-ons: ${item.addons.join(', ')}</div>` : ''}
         </div>
         <div class="modal-item-actions">
           <div class="qty-box">
@@ -259,11 +267,11 @@ function addModalItem() {
   if (!editOrderCopy) return;
   const type = document.getElementById('new-item-type').value;
   const itemTemplates = {
-    Americano: { name: 'Americano', size: 'Medium', temp: 'Hot', sugar: '25%', addons: [], price: 120 },
-    Latte: { name: 'Latte', size: 'Large', temp: 'Iced', sugar: '50%', addons: ['Vanilla'], price: 150 },
-    Espresso: { name: 'Espresso', size: 'Small', temp: 'Hot', sugar: '0%', addons: [], price: 90 },
-    Cookie: { name: 'Cookie', size: '-', temp: '-', sugar: '-', addons: [], price: 55 },
-    Pasta: { name: 'Pasta', size: '-', temp: '-', sugar: '-', addons: [], price: 185 }
+    Americano: { name: 'Americano', size: 'Medium', temp: 'Hot', sugar: '25%', price: 120 },
+    Latte: { name: 'Latte', size: 'Large', temp: 'Iced', sugar: '50%', price: 150 },
+    Espresso: { name: 'Espresso', size: 'Small', temp: 'Hot', sugar: '0%', price: 90 },
+    Cookie: { name: 'Cookie', size: '-', temp: '-', sugar: '-', price: 55 },
+    Pasta: { name: 'Pasta', size: '-', temp: '-', sugar: '-', price: 185 }
   };
 
   const template = itemTemplates[type];
@@ -347,5 +355,7 @@ window.addEventListener('DOMContentLoaded', () => {
     window.lucide.createIcons();
   }
   loadData();
+  updateSidebarTime();
+  setInterval(updateSidebarTime, 60000);
   updatePaymentButtons();
 });

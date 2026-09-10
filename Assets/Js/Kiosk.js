@@ -385,8 +385,7 @@ function getCurrentCustomizationTarget() {
       pendingCustomization = {
         size:'Medium',
         temp:'Hot',
-        sugar:50,
-        addons:[]
+          sugar:50
       };
     }
 
@@ -450,9 +449,11 @@ function filterCategory(cat) {
 function renderProducts() {
 
   const grid = document.getElementById('product-grid');
+  const searchTerm = (document.getElementById('product-search')?.value || '').trim().toLowerCase();
 
   const filtered = products.filter(
-    p => p.category === currentCategory
+    p => p.category === currentCategory &&
+      (!searchTerm || `${p.name} ${p.desc}`.toLowerCase().includes(searchTerm))
   );
 
   grid.innerHTML = filtered.map(p => {
@@ -648,6 +649,15 @@ let selectedMood = '';
 function showScreen(screen) {
 
   currentScreen = screen;
+
+  const navigationItems = document.querySelectorAll('.kiosk-nav > *');
+  navigationItems.forEach(item => item.classList.remove('active'));
+
+  if (screen === 'main') {
+    navigationItems[0]?.classList.add('active');
+  } else if (screen === 'mood' || screen === 'recommendations') {
+    navigationItems[1]?.classList.add('active');
+  }
 
   document
     .getElementById('main-menu-screen')
@@ -875,8 +885,7 @@ function addToCart(id) {
   pendingCustomization = {
     size:'Medium',
     temp:'Hot',
-    sugar:50,
-    addons:[]
+      sugar:50
   };
 
   openModal(id, getVerseForProduct(id));
@@ -914,6 +923,36 @@ function cartQty(id, delta) {
   renderCart();
 }
 
+function clearCart() {
+  cart = [];
+  renderProducts();
+  renderCart();
+}
+
+function startOver() {
+  if (cart.length > 0) {
+    document.getElementById('start-over-modal').classList.remove('hidden');
+    lucide.createIcons();
+    return;
+  }
+
+  confirmStartOver();
+}
+
+function closeStartOverModal() {
+  document.getElementById('start-over-modal').classList.add('hidden');
+}
+
+function confirmStartOver() {
+  cart = [];
+  quantities = {};
+  currentEditItemId = null;
+  pendingAddProductId = null;
+  pendingCustomization = null;
+  localStorage.removeItem('orderType');
+  window.location.href = 'Opening.html';
+}
+
 
 // ============================================================
 // RENDER CART
@@ -936,7 +975,10 @@ function renderCart() {
 
     items.classList.add('hidden');
 
-    footer.classList.add('hidden');
+    footer.classList.remove('hidden');
+    document.getElementById('checkout-button').disabled = true;
+    document.getElementById('total').textContent = '₱0.00';
+    document.getElementById('subtotal').textContent = '₱0.00';
 
   } else {
 
@@ -945,6 +987,7 @@ function renderCart() {
     items.classList.remove('hidden');
 
     footer.classList.remove('hidden');
+    document.getElementById('checkout-button').disabled = false;
 
     items.innerHTML = cart.map(c => {
 
@@ -1088,8 +1131,7 @@ function openModal(id, verse = '') {
       pendingCustomization || {
         size:'Medium',
         temp:'Hot',
-        sugar:50,
-        addons:[]
+        sugar:50
       };
   }
 
@@ -1097,8 +1139,7 @@ function openModal(id, verse = '') {
     cartItem || pendingCustomization || {
       size:'Medium',
       temp:'Hot',
-      sugar:50,
-      addons:[]
+      sugar:50
     };
 
   document.getElementById('modal-title').textContent =
@@ -1192,48 +1233,6 @@ function openModal(id, verse = '') {
 
 
   document
-    .querySelectorAll('[data-addon]')
-    .forEach(b => {
-
-      const addon =
-        b.getAttribute('data-addon');
-
-      const selected =
-        itemData.addons.includes(addon);
-
-      b.classList.toggle(
-        'bg-forest',
-        selected
-      );
-
-      b.classList.toggle(
-        'text-white',
-        selected
-      );
-
-      b.classList.toggle(
-        'border-forest',
-        selected
-      );
-
-      b.classList.toggle(
-        'border-forest/20',
-        !selected
-      );
-
-      b.classList.toggle(
-        'bg-white',
-        !selected
-      );
-
-    });
-
-
-  document
-    .getElementById('addon-choices')
-    .classList.add('hidden');
-
-  document
     .getElementById('customize-modal')
     .classList.remove('hidden');
 
@@ -1273,15 +1272,13 @@ function confirmCustomization() {
         pendingCustomization || {
           size:'Medium',
           temp:'Hot',
-          sugar:50,
-          addons:[]
+          sugar:50
         };
 
       if (existing) {
         existing.qty += qty;
         existing.temp = itemData.temp;
         existing.sugar = itemData.sugar;
-        existing.addons = [...itemData.addons];
       } else {
         cart.push({
           ...product,
@@ -1349,8 +1346,7 @@ function selectTemp(el, temp) {
     pendingCustomization = pendingCustomization || {
       size:'Medium',
       temp:'Hot',
-      sugar:50,
-      addons:[]
+      sugar:50
     };
     pendingCustomization.temp = temp;
   }
@@ -1403,69 +1399,9 @@ function selectSugar(el, sugar) {
     pendingCustomization = pendingCustomization || {
       size:'Medium',
       temp:'Hot',
-      sugar:50,
-      addons:[]
+      sugar:50
     };
     pendingCustomization.sugar = sugar;
-  }
-
-}
-
-
-function toggleAddOnChoices() {
-
-  document
-    .getElementById('addon-choices')
-    .classList.toggle('hidden');
-
-  lucide.createIcons();
-
-}
-
-
-function toggleAddOnOption(button) {
-
-  button.classList.toggle('bg-forest');
-
-  button.classList.toggle('text-white');
-
-  button.classList.toggle('border-forest');
-
-  button.classList.toggle('border-forest/20');
-
-  button.classList.toggle('bg-white');
-
-
-  const addon =
-    button.getAttribute('data-addon');
-
-  const target = getCurrentCustomizationTarget();
-
-  if (addon && target) {
-
-    const index =
-      target.addons.indexOf(addon);
-
-    if (index >= 0) {
-
-      target.addons.splice(index, 1);
-
-    } else {
-
-      target.addons.push(addon);
-
-    }
-
-  }
-
-  if (pendingAddProductId) {
-    pendingCustomization = pendingCustomization || {
-      size:'Medium',
-      temp:'Hot',
-      sugar:50,
-      addons:[]
-    };
-    pendingCustomization.addons = [...(target ? target.addons : pendingCustomization.addons || [])];
   }
 
 }
@@ -1506,12 +1442,6 @@ function checkoutCart() {
   document.getElementById('order-items-list').innerHTML =
     cart.map(item => {
 
-      const addons =
-        item.addons && item.addons.length
-          ? item.addons.join(', ')
-          : 'None';
-
-
       return `
 
         <div class="rounded-2xl bg-forest/10 p-3 border border-forest/10">
@@ -1530,10 +1460,6 @@ function checkoutCart() {
 
           <p class="text-xs text-forest/60">
             Sugar: ${item.sugar}%
-          </p>
-
-          <p class="text-xs text-forest/60">
-            Add-ons: ${addons}
           </p>
 
         </div>
@@ -1573,6 +1499,8 @@ function confirmOrder() {
       0
     );
 
+  const orderType = localStorage.getItem('orderType') || 'Dine-in';
+
 
   const num =
     Math.floor(Math.random() * 99) + 1;
@@ -1592,7 +1520,7 @@ function confirmOrder() {
 
     timestamp: new Date().toISOString(),
 
-    type: 'Kiosk',
+    type: orderType,
 
     payment: 'Pending',
 
@@ -1609,8 +1537,6 @@ function confirmOrder() {
       temp: item.temp,
 
       sugar: item.sugar + '%',
-
-      addons: item.addons,
 
       price: item.price
 
@@ -1676,15 +1602,23 @@ function closeOrderCreated() {
 function updateTime() {
 
   const now = new Date();
+  const timeText = now.toLocaleTimeString(
+    [],
+    {
+      hour:'2-digit',
+      minute:'2-digit'
+    }
+  );
+  const currentTime = document.getElementById('current-time');
 
-  document.getElementById('current-time').textContent =
-    now.toLocaleTimeString(
-      [],
-      {
-        hour:'2-digit',
-        minute:'2-digit'
-      }
-    );
+  if (currentTime) {
+    currentTime.textContent = timeText;
+  }
+
+  const sidebarTime = document.getElementById('sidebar-time');
+  if (sidebarTime) {
+    sidebarTime.textContent = timeText;
+  }
 
 }
 
@@ -1703,6 +1637,11 @@ setInterval(
 renderProducts();
 
 renderCart();
+
+const productSearch = document.getElementById('product-search');
+if (productSearch) {
+  productSearch.addEventListener('input', renderProducts);
+}
 
 lucide.createIcons();
 
@@ -1748,19 +1687,29 @@ const defaultConfig = {
 
 async function onConfigChange(config) {
 
-  document.getElementById('greeting').textContent =
-    config.greeting_text ||
-    defaultConfig.greeting_text;
+  const greeting = config.greeting_text || defaultConfig.greeting_text;
+  const greetingLead = document.querySelector('.greeting-lead');
+  const greetingSubline = document.querySelector('.greeting-subline');
+  if (greetingLead && greetingSubline) {
+    const parts = greeting.split('!');
+    greetingLead.textContent = `${parts.shift()}!`;
+    greetingSubline.textContent = parts.join('!').trim() || 'What would you like to have?';
+  }
 
+  const branch = config.branch_name || defaultConfig.branch_name;
+  const branchName = document.getElementById('branch-name');
+  if (branchName) {
+    branchName.textContent = branch;
+  }
+  const sidebarBranch = document.getElementById('sidebar-branch');
+  if (sidebarBranch) {
+    sidebarBranch.textContent = branch;
+  }
 
-  document.getElementById('branch-name').textContent =
-    config.branch_name ||
-    defaultConfig.branch_name;
-
-
-  document.getElementById('rewards-text').textContent =
-    config.rewards_text ||
-    defaultConfig.rewards_text;
+  const rewardsText = document.getElementById('rewards-text');
+  if (rewardsText) {
+    rewardsText.textContent = config.rewards_text || defaultConfig.rewards_text;
+  }
 
 
   const bg =
@@ -1804,6 +1753,7 @@ async function onConfigChange(config) {
 }
 
 
+if (window.elementSdk && typeof window.elementSdk.init === 'function') {
 window.elementSdk.init({
 
   defaultConfig,
@@ -1964,3 +1914,4 @@ window.elementSdk.init({
   ])
 
 });
+}
