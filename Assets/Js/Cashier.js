@@ -1,12 +1,15 @@
 // Must match the integer basis-point rules in Ajax/pricing_helper.php.
 const PRICING = {
-  // TODO CONFIRM: replace the student placeholder after owner approval.
-  STUDENT_RATE_BP: 1000,
-  // TODO CONFIRM: verify VAT registration and the applicable VAT percentage.
-  VAT_REGISTERED: true,
-  VAT_PERCENT: 12,
-  PWD_SENIOR_RATE_BP: 2000,
-  OWNER_RATE_BP: 10000
+  // TODO CONFIRM: set Student rate only after owner approval.
+  STUDENT_RATE_BP: null,
+  // TODO CONFIRM: set after confirming VAT registration and menu-price treatment.
+  VAT_REGISTERED: null,
+  VAT_PERCENT: null,
+  // TODO CONFIRM: set after the statutory PWD/Senior computation is approved.
+  PWD_SENIOR_RATE_BP: null,
+  OWNER_RATE_BP: 10000,
+  // TODO CONFIRM: match the approved zero-payment Owner recording method.
+  OWNER_ZERO_PAYMENT_METHOD: 'Complimentary'
 };
 
 const CASHIER_BRANCH_ID = 1;
@@ -19,6 +22,7 @@ let paymentBusy = false;
 let checkoutState = {
   orderId: null,
   category: 'Regular',
+  eligibilityConfirmed: false,
   method: 'Cash',
   cashReceived: '',
   gcashRef: '',
@@ -151,6 +155,7 @@ function resetCheckout(orderId) {
   checkoutState = {
     orderId,
     category: 'Regular',
+    eligibilityConfirmed: false,
     method: 'Cash',
     cashReceived: '',
     gcashRef: '',
@@ -167,6 +172,19 @@ function calculateSubtotal(order) {
 
 function computePricing(order, category) {
   const subtotalCents = calculateSubtotal(order);
+  if (category === 'Student' && PRICING.STUDENT_RATE_BP === null) {
+    throw new Error('Student discount settings are pending approval.');
+  }
+  if (
+    (category === 'PWD' || category === 'Senior Citizen') &&
+    (
+      PRICING.PWD_SENIOR_RATE_BP === null ||
+      PRICING.VAT_REGISTERED === null ||
+      (PRICING.VAT_REGISTERED && PRICING.VAT_PERCENT === null)
+    )
+  ) {
+    throw new Error('PWD/Senior discount and VAT settings are pending approval.');
+  }
   let baseCents = subtotalCents;
   let vatAdjustmentCents = 0;
 
@@ -324,18 +342,49 @@ function renderDetails() {
 }
 
 function updateCategoryButtons() {
+  let pendingCount = 0;
   document.querySelectorAll('.category-option').forEach(button => {
+    const category = button.dataset.category;
+    const unavailable = categoryPricingPending(category);
+    if (unavailable) pendingCount += 1;
     const selected = button.dataset.category === checkoutState.category;
+    button.disabled = unavailable;
+    button.setAttribute('aria-disabled', String(unavailable));
     button.classList.toggle('active', selected);
     button.setAttribute('aria-checked', String(selected));
   });
+  document.getElementById('pricing-pending-note')
+    .classList.toggle('hidden', pendingCount === 0);
+}
+
+function categoryPricingPending(category) {
+  if (category === 'Student') return PRICING.STUDENT_RATE_BP === null;
+  if (category === 'PWD' || category === 'Senior Citizen') {
+    return PRICING.PWD_SENIOR_RATE_BP === null ||
+      PRICING.VAT_REGISTERED === null ||
+      (PRICING.VAT_REGISTERED && PRICING.VAT_PERCENT === null);
+  }
+  return category === 'Owner';
 }
 
 function selectCategory(category) {
   if (!['Regular', 'Student', 'PWD', 'Senior Citizen', 'Owner'].includes(category)) {
     return;
   }
+  if (categoryPricingPending(category)) return;
+  if (
+    (category === 'Student' || category === 'PWD' || category === 'Senior Citizen') &&
+    !window.confirm(
+      category === 'Student'
+        ? "Confirm that you checked the customer's valid student eligibility."
+        : "Confirm that you checked the customer's valid PWD/Senior eligibility."
+    )
+  ) {
+    return;
+  }
   checkoutState.category = category;
+  checkoutState.eligibilityConfirmed =
+    category === 'Student' || category === 'PWD' || category === 'Senior Citizen';
   updateCategoryButtons();
   updatePaymentButtons();
 }
@@ -432,9 +481,11 @@ function updatePaymentReadiness() {
   const cashReceived = amountInputToCents(
     document.getElementById('cash-received')?.value || ''
   );
-  const gcashReference = checkoutState.gcashRef.replace(/\s+/g, '');
+  const gcashReference = checkoutState.gcashRef.trim();
   const gcashReady =
-    /^[A-Za-z0-9]{8,20}$/.test(gcashReference) &&
+    gcashReference.length > 0 &&
+    gcashReference.length <= 20 &&
+    !/[\u0000-\u001f\u007f]/.test(gcashReference) &&
     checkoutState.gcashVerified;
   const cashReady =
     cashReceived !== null && cashReceived >= pricing.finalCents;
@@ -481,10 +532,11 @@ async function markAsPaid() {
     order_id: Number(orderBeingPaid.id),
     branch_id: CASHIER_BRANCH_ID,
     customer_category: checkoutState.category,
+    eligibility_confirmed: checkoutState.eligibilityConfirmed,
     payment_method: paymentMethod,
     amount_received: amountReceivedCents,
     gcash_reference: checkoutState.method === 'GCash'
-      ? checkoutState.gcashRef.replace(/\s+/g, '')
+      ? checkoutState.gcashRef.trim()
       : null,
     payment_verified:
       checkoutState.method === 'GCash' && checkoutState.gcashVerified,

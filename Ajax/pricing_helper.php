@@ -1,14 +1,19 @@
 <?php
 declare(strict_types=1);
 
-// TODO CONFIRM: replace the placeholder student rate after owner approval.
-const STUDENT_RATE_BP = 1000;
+// TODO CONFIRM: set these only after the owner approves the Student discount.
+const STUDENT_RATE_BP = null;
 
-// TODO CONFIRM: verify VAT registration and the applicable VAT percentage.
-const VAT_REGISTERED = true;
-const VAT_PERCENT = 12;
+// TODO CONFIRM: set after confirming VAT registration and menu-price treatment.
+const VAT_REGISTERED = null;
+const VAT_PERCENT = null;
 
-const PWD_SENIOR_RATE_BP = 2000;
+// TODO CONFIRM: set after the statutory PWD/Senior computation is approved.
+const PWD_SENIOR_RATE_BP = null;
+
+// TODO CONFIRM: confirm the accounting method for zero-payment Owner orders.
+const OWNER_ZERO_PAYMENT_METHOD = 'Complimentary';
+
 const OWNER_RATE_BP = 10000;
 
 function pricing_rules(): array
@@ -18,7 +23,8 @@ function pricing_rules(): array
         'vat_registered' => VAT_REGISTERED,
         'vat_percent' => VAT_PERCENT,
         'pwd_senior_rate_bp' => PWD_SENIOR_RATE_BP,
-        'owner_rate_bp' => OWNER_RATE_BP
+        'owner_rate_bp' => OWNER_RATE_BP,
+        'owner_zero_payment_method' => OWNER_ZERO_PAYMENT_METHOD
     ];
 }
 
@@ -67,6 +73,21 @@ function compute_order_pricing(array $items, string $category): array
 
     if ($items === []) {
         throw new InvalidArgumentException('Order must contain at least one item.');
+    }
+
+    if ($category === 'Student' && STUDENT_RATE_BP === null) {
+        throw new InvalidArgumentException('Student discount settings are pending approval.');
+    }
+
+    if (
+        in_array($category, ['PWD', 'Senior Citizen'], true) &&
+        (
+            PWD_SENIOR_RATE_BP === null ||
+            VAT_REGISTERED === null ||
+            (VAT_REGISTERED && VAT_PERCENT === null)
+        )
+    ) {
+        throw new InvalidArgumentException('PWD/Senior discount and VAT settings are pending approval.');
     }
 
     $subtotalCents = 0;

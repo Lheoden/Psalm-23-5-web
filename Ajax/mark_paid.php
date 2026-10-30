@@ -37,6 +37,7 @@ $expectedFinalAmount = filter_var(
 );
 $category = $input['customer_category'] ?? null;
 $paymentMethod = $input['payment_method'] ?? null;
+$eligibilityConfirmed = $input['eligibility_confirmed'] ?? false;
 $validCategories = [
     'Regular',
     'Student',
@@ -60,6 +61,20 @@ if (!in_array($category, $validCategories, true)) {
     respond(400, [
         'success' => false,
         'message' => 'Select a valid customer category.'
+    ]);
+}
+
+if (in_array($category, ['Student', 'PWD', 'Senior Citizen'], true) && $eligibilityConfirmed !== true) {
+    respond(422, [
+        'success' => false,
+        'message' => 'Cashier confirmation of customer eligibility is required.'
+    ]);
+}
+
+if ($category === 'Owner') {
+    respond(403, [
+        'success' => false,
+        'message' => 'Owner transactions are unavailable until server-side authorization is configured.'
     ]);
 }
 
@@ -141,7 +156,7 @@ try {
         $transactionStarted = false;
         respond(422, [
             'success' => false,
-            'message' => 'This order contains an invalid quantity or price.'
+            'message' => $e->getMessage()
         ]);
     }
 
@@ -169,6 +184,7 @@ try {
     $changeCents = 0;
     $gcashReference = null;
     $storedPaymentMethod = $paymentMethod;
+    $rules = pricing_rules();
 
     if ($finalCents === 0) {
         if ($category !== 'Owner' || $paymentMethod !== 'None') {
@@ -180,7 +196,7 @@ try {
             ]);
         }
 
-        $storedPaymentMethod = 'Complimentary';
+        $storedPaymentMethod = $rules['owner_zero_payment_method'];
         $receivedInput = $input['amount_received'] ?? 0;
         $receivedCents = filter_var($receivedInput, FILTER_VALIDATE_INT);
         if ($receivedCents === false || $receivedCents !== 0) {
@@ -215,17 +231,18 @@ try {
                 'message' => 'Enter a valid GCash reference number.'
             ]);
         }
-        $gcashReference = preg_replace('/\s+/', '', $rawReference);
+        $gcashReference = trim($rawReference);
 
         if (
-            !is_string($gcashReference) ||
-            !preg_match('/^[A-Za-z0-9]{8,20}$/', $gcashReference)
+            $gcashReference === '' ||
+            strlen($gcashReference) > 20 ||
+            preg_match('/[\x00-\x1F\x7F]/', $gcashReference)
         ) {
             $pdo->rollBack();
             $transactionStarted = false;
             respond(422, [
                 'success' => false,
-                'message' => 'GCash reference must contain 8–20 letters or numbers.'
+                'message' => 'GCash reference must contain 1–20 printable characters.'
             ]);
         }
 
@@ -284,6 +301,7 @@ try {
              total_amount = :total_amount,
              payment_method = :payment_method,
              gcash_reference = :gcash_reference,
+             gcash_verified_at = :gcash_verified_at,
              amount_paid = :amount_paid,
              change_amount = :change_amount,
              paid_at = :paid_at
@@ -300,6 +318,7 @@ try {
         'total_amount' => cents_to_decimal($finalCents),
         'payment_method' => $storedPaymentMethod,
         'gcash_reference' => $gcashReference,
+        'gcash_verified_at' => $paymentMethod === 'GCash' ? $paidAtDatabase : null,
         'amount_paid' => cents_to_decimal($receivedCents),
         'change_amount' => cents_to_decimal($changeCents),
         'paid_at' => $paidAtDatabase,
@@ -356,6 +375,7 @@ try {
         'customer_category' => $category,
         'payment_method' => $storedPaymentMethod,
         'gcash_reference' => $gcashReference,
+        'gcash_verified_at' => $paymentMethod === 'GCash' ? $paidAt->format(DateTimeInterface::ATOM) : null,
         'subtotal_amount' => cents_to_decimal($pricing['subtotal_cents']),
         'vat_adjustment_amount' => cents_to_decimal($pricing['vat_adjustment_cents']),
         'discount_rate' => number_format($pricing['discount_rate_bp'] / 10000, 4, '.', ''),

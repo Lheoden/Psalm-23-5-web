@@ -263,6 +263,18 @@ button {
   font-weight: 700;
 }
 
+.category-option:disabled {
+  cursor: not-allowed;
+  opacity: 0.48;
+}
+
+.pricing-pending-note {
+  margin: 8px 0 0;
+  color: var(--cashier-muted);
+  font-size: 0.66rem;
+  line-height: 1.45;
+}
+
 .refresh-btn {
   display: inline-flex;
   align-items: center;

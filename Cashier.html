@@ -239,6 +239,7 @@
           <button type="button" class="category-option" data-category="Senior Citizen" role="radio" aria-checked="false">Senior Citizen</button>
           <button type="button" class="category-option" data-category="Owner" role="radio" aria-checked="false">Owner</button>
          </div>
+         <p id="pricing-pending-note" class="pricing-pending-note hidden">Regular orders keep current listed totals. Student/PWD/Senior discounts await approved rates and VAT treatment; Owner transactions require server-side authorization.</p>
 
          <div class="payment-method-options" role="group" aria-label="Payment method">
           <button id="payment-cash" type="button" class="payment-option active" aria-pressed="true">Cash</button>
@@ -268,8 +269,8 @@
            <img id="gcash-qr" src="Assets/Images/GCash_QR.png" alt="Merchant GCash QR code" onerror="this.hidden=true; document.getElementById('gcash-qr-fallback').classList.remove('hidden')" />
            <p id="gcash-qr-fallback" class="gcash-qr-fallback hidden">Merchant GCash QR is not available. Confirm the payment using the merchant account instructions.</p>
           </div>
-          <label for="gcash-reference">Reference Number</label>
-          <input id="gcash-reference" type="text" maxlength="40" autocomplete="off" />
+          <label for="gcash-reference">GCash Reference Number</label>
+          <input id="gcash-reference" type="text" maxlength="20" autocomplete="off" />
           <label class="gcash-verification">
            <input id="gcash-verified" type="checkbox" />
            <span id="gcash-verification-copy">I checked the GCash merchant account and the payment of ₱0.00 was received.</span>
