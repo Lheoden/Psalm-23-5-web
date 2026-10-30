@@ -1,0 +1,594 @@
+<!doctype html>
+<html lang="en" class="h-full">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Admin Dashboard</title>
+
+  <!-- =========================================================
+       ADMIN MODULE
+       This page handles the Admin side of the system.
+
+       For Workflow 3 (Inventory Management), the Admin can:
+       - View recorded inventory quantities
+       - Select an inventory item
+       - Enter a physically counted stock quantity
+       - Validate the entered quantity
+       - Save the updated inventory record
+       - Compare stock against the low-stock threshold
+       - Automatically display LOW STOCK or GOOD
+
+       IMPORTANT:
+       Physical stock checking/counting is still done manually.
+       The system automates the validation, saving, threshold
+       checking, and stock-status display after the quantity
+       is entered by the Admin.
+       ========================================================= -->
+
+  <script src="https://cdn.tailwindcss.com/3.4.17"></script>
+  <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <script>
+    tailwind.config = {
+      theme: {
+        extend: {
+          fontFamily: { poppins: ['Poppins', 'sans-serif'] },
+          colors: {
+            cream: '#F7F4EC',
+            forest: '#2F4F2F',
+            forestLight: '#3F6540'
+          }
+        }
+      }
+    }
+  </script>
+
+  <link rel="stylesheet" href="Assets/Css/Global.css" />
+  <link rel="stylesheet" href="Assets/Css/Admin.css" />
+</head>
+
+<body class="admin-body">
+  <div class="admin-shell">
+    <!-- =====================================================
+         ADMIN SIDEBAR / MODULE NAVIGATION
+         Gives the Admin access to Dashboard, Menu, Inventory,
+         Sales, Reports, and Users.
+         ===================================================== -->
+    <aside class="admin-sidebar">
+      <div class="brand-block">
+        <img src="Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" class="brand-logo" />
+        <div>
+          <p class="brand-name">Psalm 23:5 Coffee</p>
+          <p class="brand-subtitle">Admin Panel</p>
+        </div>
+      </div>
+
+      <nav class="admin-nav" aria-label="Admin navigation">
+        <button onclick="showTab('overview')" id="tab-overview" class="tab-btn active">
+          <i data-lucide="layout-dashboard"></i><span>Dashboard</span>
+        </button>
+        <button onclick="showTab('menu')" id="tab-menu" class="tab-btn">
+          <i data-lucide="coffee"></i><span>Menu</span>
+        </button>
+        <button onclick="showTab('inventory')" id="tab-inventory" class="tab-btn">
+          <i data-lucide="package"></i><span>Inventory</span>
+        </button>
+        <button onclick="showTab('sales')" id="tab-sales" class="tab-btn">
+          <i data-lucide="receipt-text"></i><span>Sales</span>
+        </button>
+        <button onclick="showTab('reports')" id="tab-reports" class="tab-btn">
+          <i data-lucide="file-bar-chart"></i><span>Reports</span>
+        </button>
+        <button onclick="showTab('users')" id="tab-users" class="tab-btn">
+          <i data-lucide="users"></i><span>Users</span>
+        </button>
+      </nav>
+
+      <div class="sidebar-bottom">
+        <button type="button" class="tab-btn">
+          <i data-lucide="settings"></i><span>Settings</span>
+        </button>
+        <div class="sidebar-footer">
+          <p>Psalm 23:5 Coffee</p>
+          <span>Admin Panel v1.0</span>
+        </div>
+      </div>
+    </aside>
+
+    <main class="admin-main">
+      <header class="dashboard-header">
+        <div>
+          <h1>Admin Dashboard</h1>
+          <p>Here’s what’s happening across your branches.</p>
+        </div>
+
+        <div class="header-actions">
+          <div class="date-box">
+            <i data-lucide="calendar-days"></i>
+            <span id="admin-date">Today</span>
+          </div>
+
+          <div class="branch-control">
+            <i data-lucide="map-pin"></i>
+            <select id="branch-select" onchange="changeBranch(this.value)">
+              <option value="calamba">Calamba</option>
+              <option value="lipa">Lipa</option>
+            </select>
+            <i data-lucide="chevron-down" class="select-chevron"></i>
+          </div>
+
+          <div class="admin-profile">
+            <div class="avatar">A</div>
+            <div class="profile-copy">
+              <strong>Admin</strong>
+              <span>Administrator</span>
+            </div>
+            <i data-lucide="chevron-down"></i>
+          </div>
+        </div>
+      </header>
+
+      <section class="content-area">
+        <!-- ===================================================
+             ADMIN OVERVIEW DASHBOARD
+             Summary cards and recent records for the selected branch.
+             =================================================== -->
+        <div id="overview" class="dashboard-view">
+          <div class="kpi-grid">
+            <article class="kpi-card">
+              <div class="kpi-icon"><i data-lucide="banknote"></i></div>
+              <div>
+                <p class="kpi-label">Total Sales</p>
+                <p id="kpi-sales" class="kpi-value">₱0.00</p>
+              </div>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-icon"><i data-lucide="shopping-bag"></i></div>
+              <div>
+                <p class="kpi-label">Orders Today</p>
+                <p id="kpi-orders" class="kpi-value">0</p>
+              </div>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-icon warm"><i data-lucide="triangle-alert"></i></div>
+              <div>
+                <p class="kpi-label">Low Stock Items</p>
+                <p id="kpi-low-stock" class="kpi-value">0</p>
+                <span class="kpi-note">Needs restocking</span>
+              </div>
+            </article>
+
+            <article class="kpi-card">
+              <div class="kpi-icon"><i data-lucide="store"></i></div>
+              <div>
+                <p class="kpi-label">Active Branches</p>
+                <p id="kpi-active-branches" class="kpi-value">2</p>
+                <span class="kpi-note">Calamba • Lipa</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="dashboard-grid">
+            <div class="dashboard-left">
+              <section class="panel recent-orders-panel">
+                <div class="panel-header">
+                  <div>
+                    <h2>Recent Orders</h2>
+                    <p>Latest recorded transactions for the selected branch.</p>
+                  </div>
+                  <button type="button" class="text-button" onclick="showTab('sales')">View All</button>
+                </div>
+
+                <div class="table-wrap">
+                  <table class="dashboard-table">
+                    <thead>
+                      <tr>
+                        <th>#</th>
+                        <th>Item(s)</th>
+                        <th>Branch</th>
+                        <th>Total</th>
+                        <th>Status</th>
+                        <th>Time</th>
+                      </tr>
+                    </thead>
+                    <tbody id="dashboard-recent-orders"></tbody>
+                  </table>
+                </div>
+              </section>
+
+              <section class="coffee-banner">
+                <div class="banner-copy">
+                  <p class="banner-eyebrow">Psalm 23:5 Coffee</p>
+                  <h2>Good coffee.<br>Better days.</h2>
+                  <p>“You prepare a table before me in the presence of my enemies.”</p>
+                  <span>Psalm 23:5</span>
+                </div>
+                <div class="banner-mark">
+                  <img src="Assets/Images/Logo.jpg" alt="" />
+                </div>
+              </section>
+            </div>
+
+            <aside class="panel low-stock-panel">
+              <div class="panel-header">
+                <div>
+                  <h2>Low Stock Items</h2>
+                  <p>Items that need attention.</p>
+                </div>
+                <button type="button" class="text-button" onclick="showTab('inventory')">View All</button>
+              </div>
+              <div id="dashboard-low-stock" class="stock-list"></div>
+            </aside>
+          </div>
+        </div>
+
+     <!-- =====================================================
+          SALES MODULE
+          Displays recorded sales/orders and supports date filtering.
+          This section is separate from Workflow 3.
+          ===================================================== -->
+     <div id="sales" class="hidden space-y-6">
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm">
+       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+         <p class="text-sm font-semibold text-forest">Sales filter</p>
+         <p class="text-sm text-forest/60">Filter by date range.</p>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row">
+         <input id="sales-from" type="date" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+         <input id="sales-to" type="date" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+         <button onclick="renderSalesTable()" class="rounded-2xl bg-forest text-white px-4 py-3 text-sm font-semibold hover:bg-forestLight transition">Apply</button>
+        </div>
+       </div>
+      </div>
+      <div class="grid gap-4 xl:grid-cols-[1.2fr_0.8fr]">
+       <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm overflow-x-auto">
+        <p class="text-sm font-semibold text-forest mb-4">Recent Orders</p>
+        <table class="min-w-full text-left text-sm text-forest/70">
+         <thead>
+          <tr>
+           <th class="pb-3 font-semibold">Order #</th>
+           <th class="pb-3 font-semibold">Time</th>
+           <th class="pb-3 font-semibold">Items</th>
+           <th class="pb-3 font-semibold">Payment</th>
+           <th class="pb-3 font-semibold">Status</th>
+          </tr>
+         </thead>
+         <tbody id="sales-table"></tbody>
+        </table>
+       </div>
+       <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm">
+        <p class="text-sm font-semibold text-forest">Sales by category</p>
+        <div id="chart-sales-category" class="mt-6 space-y-4"></div>
+       </div>
+      </div>
+     </div>
+     <!-- =====================================================
+          WORKFLOW 3 - INVENTORY MANAGEMENT
+
+          TO-BE process represented in this section:
+
+          1. Display inventory items and recorded quantities
+          2. Admin selects an inventory item
+          3. Admin enters the physically counted quantity
+          4. System validates the quantity
+          5. Invalid input -> display error and re-enter
+          6. Valid input -> save updated inventory record
+          7. System checks the low-stock threshold
+          8. System sets status to LOW STOCK or GOOD
+          9. Display updated inventory and stock status
+
+          NOTE:
+          The system does NOT automatically detect physical stock.
+          Staff/Admin still physically checks the available stock.
+          ===================================================== -->
+     <div id="inventory" class="hidden inventory-page">
+          <div class="inventory-page-header">
+            <div>
+              <p class="inventory-eyebrow">Inventory Management</p>
+              <h2>Inventory</h2>
+              <p>Record physically checked stock counts and monitor low-stock status for the selected branch.</p>
+            </div>
+
+            <!-- Opens the Update Stock modal for Workflow 3 -->
+            <button type="button" class="inventory-primary-btn" onclick="openStockModal()">
+              <i data-lucide="plus"></i>
+              Update Stock
+            </button>
+          </div>
+
+          <!-- Inventory summary:
+               total tracked items + number currently flagged LOW STOCK -->
+          <div class="inventory-kpis">
+            <article class="inventory-kpi">
+              <div class="inventory-kpi-icon">
+                <i data-lucide="package"></i>
+              </div>
+              <div>
+                <p>Total Items</p>
+                <strong id="inv-total-ingredients">0</strong>
+                <span>tracked inventory items</span>
+              </div>
+            </article>
+
+            <article class="inventory-kpi">
+              <div class="inventory-kpi-icon warning">
+                <i data-lucide="triangle-alert"></i>
+              </div>
+              <div>
+                <p>Low Stock Items</p>
+                <strong id="inv-low-stock-count">0</strong>
+                <span>need attention</span>
+              </div>
+            </article>
+          </div>
+
+          <div class="inventory-toolbar">
+            <div class="inventory-search">
+              <i data-lucide="search"></i>
+              <input
+                id="inventory-search"
+                type="search"
+                placeholder="Search inventory items..."
+                oninput="filterInventoryTable()"
+              />
+            </div>
+          </div>
+
+          <!-- =================================================
+               INVENTORY TABLE
+               Admin.js dynamically renders:
+               - item name
+               - recorded stock quantity
+               - low-stock level / threshold
+               - automatic status (LOW STOCK / GOOD)
+               - update action
+               ================================================= -->
+          <section class="inventory-table-card">
+            <div class="inventory-table-heading">
+              <div>
+                <h3>Inventory Items</h3>
+                <p>Enter the physically checked quantity; the system validates, saves, and checks the low-stock threshold.</p>
+              </div>
+              <span id="inventory-branch-label">Calamba Branch</span>
+            </div>
+
+            <div class="inventory-table-wrap">
+              <table class="inventory-table">
+                <thead>
+                  <tr>
+                    <th>Item</th>
+                    <th>Recorded Stock</th>
+                    <th>Low-Stock Level</th>
+                    <th>Status</th>
+                    <th>Action</th>
+                  </tr>
+                </thead>
+                <!-- Admin.js inserts the inventory rows here -->
+                <tbody id="ingredient-table"></tbody>
+              </table>
+            </div>
+          </section>
+
+          <div id="inventory-update-message" class="inventory-update-message hidden" role="status"></div>
+        </div>
+
+        <!-- ===================================================
+             UPDATE STOCK MODAL
+
+             This is the main input step of Workflow 3.
+
+             The Admin:
+             - selects an inventory item
+             - sees the currently recorded stock and low-stock level
+             - enters the physically counted quantity
+             - clicks Update Stock
+
+             Admin.js then validates, saves, checks the threshold,
+             and refreshes the LOW STOCK / GOOD status.
+             =================================================== -->
+        <div id="stock-modal" class="stock-modal hidden" aria-hidden="true">
+          <div class="stock-modal-backdrop" onclick="closeStockModal()"></div>
+
+          <div class="stock-modal-card" role="dialog" aria-modal="true" aria-labelledby="stock-modal-title">
+            <div class="stock-modal-header">
+              <div>
+                <p class="inventory-eyebrow">Inventory Management</p>
+                <h3 id="stock-modal-title">Update Stock</h3>
+              </div>
+
+              <button type="button" class="stock-modal-close" onclick="closeStockModal()" aria-label="Close">
+                <i data-lucide="x"></i>
+              </button>
+            </div>
+
+            <div class="stock-modal-body">
+              <!-- Step 1: Admin selects which inventory item to update -->
+              <label class="stock-field">
+                <span>Inventory Item</span>
+                <select id="stock-item-select" onchange="syncSelectedInventoryItem()"></select>
+              </label>
+
+              <div class="stock-current-grid">
+                <div>
+                  <span>Recorded Stock</span>
+                  <strong id="stock-current-value">—</strong>
+                </div>
+                <div>
+                  <span>Low-Stock Level</span>
+                  <strong id="stock-threshold-value">—</strong>
+                </div>
+              </div>
+
+              <!-- Step 2: Admin enters the actual quantity counted physically -->
+              <label class="stock-field">
+                <span>Physically Counted Quantity</span>
+                <input id="stock-new-quantity" type="number" min="0" step="1" placeholder="Enter counted quantity" />
+              </label>
+
+              <!--
+                   Step 3: Validation feedback.
+                   Invalid/negative/empty quantities are rejected by Admin.js.
+              -->
+              <p id="stock-validation-message" class="stock-validation-message hidden"></p>
+            </div>
+
+            <div class="stock-modal-actions">
+              <button type="button" class="inventory-secondary-btn" onclick="closeStockModal()">Cancel</button>
+              <!--
+                   Step 4:
+                   updateInventoryStock() validates the quantity,
+                   saves the new stock value, checks the threshold,
+                   and displays LOW STOCK or GOOD.
+              -->
+              <button type="button" class="inventory-primary-btn" onclick="updateInventoryStock()">Update Stock</button>
+            </div>
+          </div>
+        </div>
+        <!-- =================================================
+             REPORTS MODULE
+             Generates and lists saved sales/inventory reports.
+             ================================================= -->
+        <div id="reports" class="hidden space-y-6">
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm">
+       <div class="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+        <div>
+         <p class="text-sm font-semibold text-forest">Generate Report</p>
+         <p class="text-sm text-forest/60">Create and export branch sales or inventory reports.</p>
+        </div>
+        <div class="flex flex-col gap-3 sm:flex-row sm:items-center">
+         <select id="report-type" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none">
+          <option value="sales">Sales Report</option>
+          <option value="inventory">Inventory Report</option>
+         </select>
+         <input id="report-from" type="date" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+         <input id="report-to" type="date" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+         <button onclick="generateReport()" class="rounded-2xl bg-forest text-white px-4 py-3 text-sm font-semibold hover:bg-forestLight transition">Generate Report</button>
+        </div>
+       </div>
+      </div>
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm">
+       <p class="text-sm font-semibold text-forest">Saved Reports</p>
+       <div id="report-list" class="mt-4 space-y-3"></div>
+      </div>
+     </div>
+     <!-- =====================================================
+          MENU MANAGEMENT MODULE
+          Add, edit, enable/disable, or remove menu products.
+          ===================================================== -->
+     <div id="menu" class="hidden space-y-6">
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+       <div>
+        <p class="text-sm font-semibold text-forest">Menu Management</p>
+        <p class="text-sm text-forest/60">Add, edit, or remove products per branch.</p>
+       </div>
+       <button onclick="openMenuModal('add')" class="rounded-2xl bg-forest text-white px-4 py-3 text-sm font-semibold hover:bg-forestLight transition">Add Product</button>
+      </div>
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm overflow-x-auto">
+       <table class="min-w-full text-left text-sm text-forest/70">
+        <thead>
+         <tr>
+          <th class="pb-3 font-semibold">Name</th>
+          <th class="pb-3 font-semibold">Category</th>
+          <th class="pb-3 font-semibold">Price</th>
+          <th class="pb-3 font-semibold">Mood Tags</th>
+          <th class="pb-3 font-semibold">Status</th>
+          <th class="pb-3 font-semibold">Actions</th>
+         </tr>
+        </thead>
+        <tbody id="menu-table"></tbody>
+       </table>
+      </div>
+     </div>
+     <!-- =====================================================
+          USER ACCOUNTS MODULE
+          Displays staff-role records used by the prototype.
+
+          NOTE:
+          Full login authentication / automatic role identification
+          is not yet implemented in the current prototype.
+          ===================================================== -->
+     <div id="users" class="hidden space-y-6">
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm">
+       <p class="text-sm font-semibold text-forest">User Accounts</p>
+       <p class="text-sm text-forest/60 mt-2">Manage credentials for kiosk, cashier, and bar staff.</p>
+      </div>
+      <div class="rounded-3xl bg-white p-6 border border-forest/10 shadow-sm overflow-x-auto">
+       <table class="min-w-full text-left text-sm text-forest/70">
+        <thead>
+         <tr>
+          <th class="pb-3 font-semibold">Name</th>
+          <th class="pb-3 font-semibold">Role</th>
+          <th class="pb-3 font-semibold">Branch</th>
+          <th class="pb-3 font-semibold">Status</th>
+          <th class="pb-3 font-semibold">Actions</th>
+         </tr>
+        </thead>
+        <tbody id="users-table"></tbody>
+       </table>
+      </div>
+     </div>
+      </section>
+    </main>
+  </div>
+
+  <!-- =========================================================
+       MENU ITEM MODAL
+       Used by the Menu Management module for adding/editing products.
+       ========================================================= -->
+  <div id="menu-modal" class="fixed inset-0 z-50 hidden bg-black/40 flex items-center justify-center px-4 py-8">
+   <div class="w-full max-w-xl rounded-[32px] bg-white p-6 shadow-2xl">
+    <div class="flex items-center justify-between gap-4">
+     <div>
+      <p class="text-xs uppercase tracking-[0.3em] text-forest/50 font-semibold">Menu Item</p>
+      <h2 id="menu-modal-title" class="mt-2 text-2xl font-bold text-forest">Add Product</h2>
+     </div>
+     <button type="button" onclick="closeMenuModal()" class="rounded-full bg-cream p-3 text-forest shadow-sm hover:bg-forest/5"><i data-lucide="x" class="w-5 h-5"></i></button>
+    </div>
+    <div class="mt-6 grid gap-4">
+     <input id="menu-name" type="text" placeholder="Name" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <input id="menu-price" type="number" placeholder="Price" min="0" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <input id="menu-category" type="text" placeholder="Category" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <input id="menu-mood" type="text" placeholder="Mood Tags (comma separated)" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <input id="menu-verse" type="text" placeholder="Bible Verse" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <input id="menu-image" type="text" placeholder="Image URL" class="rounded-2xl border border-forest/20 bg-cream px-4 py-3 text-sm text-forest outline-none" />
+     <div class="flex justify-end gap-3">
+      <button type="button" onclick="closeMenuModal()" class="rounded-2xl border border-forest/20 bg-white px-4 py-3 text-sm font-semibold text-forest hover:bg-forest/10 transition">Cancel</button>
+      <button type="button" onclick="saveMenuItem()" class="rounded-2xl bg-forest text-white px-4 py-3 text-sm font-semibold hover:bg-forestLight transition">Save</button>
+     </div>
+    </div>
+   </div>
+  </div>
+
+  
+ 
+
+
+  <!-- =========================================================
+       JAVASCRIPT FILES
+
+       Global.js
+       = shared functions used across the system.
+
+       Admin.js
+       = Admin dashboard logic, including Workflow 3:
+         - renderInventory()
+         - openStockModal()
+         - syncSelectedInventoryItem()
+         - updateInventoryStock()
+         - quantity validation
+         - localStorage saving
+         - low-stock threshold checking
+         - LOW STOCK / GOOD status display
+
+       Current prototype uses browser localStorage instead of
+       a centralized database/backend.
+       ========================================================= -->
+  <script src="Assets/Js/Global.js"></script>
+  <script src="Assets/Js/Admin.js"></script>
+</body>
+</html>

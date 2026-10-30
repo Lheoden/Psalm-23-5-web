@@ -1,4 +1,4 @@
-const products = [
+let products = [
 
   // ============================================================
   // HOT / ICED COFFEE
@@ -9,6 +9,7 @@ const products = [
     name: "Psalm Signature",
     desc: "Sweet and bold signature coffee",
     price: 150,
+    requiresCustomization: true,
     category: "coffee",
     tag: "Best Seller",
     emoji: "Espresso.png"
@@ -19,6 +20,7 @@ const products = [
     name: "Espresso Matcha",
     desc: "Espresso blended with matcha",
     price: 120,
+    requiresCustomization: true,
     category: "coffee",
     tag: "Popular",
     emoji: "Espresso matcha.png"
@@ -29,6 +31,7 @@ const products = [
     name: "Americano",
     desc: "Espresso with water, served hot or iced",
     price: 90,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Americano.png"
@@ -39,6 +42,7 @@ const products = [
     name: "Spanish Latte",
     desc: "Espresso shots with vanilla and condensed milk",
     price: 125,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Spanish latte.png"
@@ -49,6 +53,7 @@ const products = [
     name: "Mocha Latte",
     desc: "Espresso shots with milk, chocolate, and cream",
     price: 130,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Mocha latte.png"
@@ -59,6 +64,7 @@ const products = [
     name: "Salted Caramel",
     desc: "Creamy espresso with the aroma of salted caramel",
     price: 130,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Salted caramel.png"
@@ -69,6 +75,7 @@ const products = [
     name: "Latte",
     desc: "Espresso shots mixed with full milk",
     price: 120,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Latte.png"
@@ -79,6 +86,7 @@ const products = [
     name: "Vanilla Latte",
     desc: "Espresso shots with milk and vanilla",
     price: 120,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Vanilla latte.png"
@@ -89,6 +97,7 @@ const products = [
     name: "Caramel Macchiato",
     desc: "Espresso shots with milk and vanilla topped with caramel",
     price: 120,
+    requiresCustomization: true,
     category: "coffee",
     tag: "",
     emoji: "Caramel macchiato.png"
@@ -105,6 +114,7 @@ const products = [
     name: "Strawberry Cream Cheese",
     desc: "Strawberry frappe with creamy cheese",
     price: 135,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Strawberry Cream Cheese.png"
@@ -115,6 +125,7 @@ const products = [
     name: "Blueberry Cream Cheese",
     desc: "Blueberry frappe with creamy cheese",
     price: 135,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Blueberry Cream Cheese.png"
@@ -125,6 +136,7 @@ const products = [
     name: "Matcha Cream Cheese",
     desc: "Matcha frappe with creamy cheese",
     price: 135,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Matcha Cream Cheese.png"
@@ -135,6 +147,7 @@ const products = [
     name: "Ube Cream Cheese",
     desc: "Ube frappe with creamy cheese",
     price: 135,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Ube Cream Cheese.png"
@@ -145,6 +158,7 @@ const products = [
     name: "Oreo Cream Cheese",
     desc: "Oreo frappe with creamy cheese",
     price: 145,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Oreo Cream Cheese.png"
@@ -155,6 +169,7 @@ const products = [
     name: "Oreo Matcha Frappe",
     desc: "Matcha frappe blended with Oreo",
     price: 145,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Oreo Matcha Frappe.png"
@@ -165,6 +180,7 @@ const products = [
     name: "Choco Java Chips Frappe",
     desc: "Chocolate frappe blended with java chips",
     price: 155,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Choco Java Chips Frappe.png"
@@ -175,6 +191,7 @@ const products = [
     name: "Mocha Cookie Crumble Frappe",
     desc: "Mocha frappe with cookie crumble",
     price: 155,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Mocha Cookie Crumble Frappe.png"
@@ -185,6 +202,7 @@ const products = [
     name: "Biscoff Flavor Frappe",
     desc: "Creamy frappe with Biscoff flavor",
     price: 155,
+    requiresCustomization: false,
     category: "frappe",
     tag: "",
     emoji: "Biscoff Flavor Frappe.png"
@@ -201,6 +219,7 @@ const products = [
     name: "Apple Soda",
     desc: "Soda-based drink with jelly popping boba",
     price: 75,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Apple Soda.png"
@@ -211,6 +230,7 @@ const products = [
     name: "Blueberry Soda",
     desc: "Soda-based drink with jelly popping boba",
     price: 75,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Blueberry Soda.png"
@@ -221,6 +241,7 @@ const products = [
     name: "Strawberry Matcha",
     desc: "Matcha with full milk and strawberry",
     price: 120,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Strawberry Matcha.png"
@@ -231,6 +252,7 @@ const products = [
     name: "Blueberry Matcha",
     desc: "Matcha with full milk and blueberry",
     price: 120,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Blueberry Matcha.png"
@@ -241,6 +263,7 @@ const products = [
     name: "Choco Drizzle",
     desc: "Our signature blend of the famous chocolates",
     price: 120,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Choco Drizzle.png"
@@ -251,6 +274,7 @@ const products = [
     name: "Ube Latte",
     desc: "A rich combination of sweet ube and espresso",
     price: 135,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Ube Latte.png"
@@ -261,6 +285,7 @@ const products = [
     name: "Ube Matcha",
     desc: "A rich combination of sweet ube and matcha",
     price: 140,
+    requiresCustomization: false,
     category: "other",
     tag: "",
     emoji: "Ube Matcha.png"
@@ -276,6 +301,7 @@ const products = [
     name: "Double Chocolate Cookies",
     desc: "Rich and chewy double chocolate cookie",
     price: 40,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -286,6 +312,7 @@ const products = [
     name: "Red Velvet Cookies",
     desc: "Soft and rich red velvet cookie",
     price: 50,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -296,6 +323,7 @@ const products = [
     name: "S'mores Cookies",
     desc: "Chocolate cookie with sweet s'mores flavor",
     price: 50,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -306,6 +334,7 @@ const products = [
     name: "Oreo Brownies",
     desc: "Rich chocolate brownies with Oreo",
     price: 50,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍫"
@@ -316,6 +345,7 @@ const products = [
     name: "Brookie",
     desc: "Brownie combined with cookies",
     price: 50,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -326,6 +356,7 @@ const products = [
     name: "Cinnamon Cookies",
     desc: "Soft cookies with cinnamon flavor",
     price: 55,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -336,6 +367,7 @@ const products = [
     name: "Nutella Cookies",
     desc: "Soft cookies filled with Nutella",
     price: 60,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -346,6 +378,7 @@ const products = [
     name: "Biscoff Cookies",
     desc: "Cookies with rich Biscoff flavor",
     price: 65,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍪"
@@ -356,6 +389,7 @@ const products = [
     name: "Cheesy Lasagna",
     desc: "Creamy and cheesy baked lasagna",
     price: 160,
+    requiresCustomization: false,
     category: "food",
     tag: "",
     emoji: "🍝"
@@ -411,11 +445,11 @@ function getImagePath(filename) {
     return filename;
   }
 
-  if (filename.startsWith('../Assets/Images/')) {
+  if (filename.startsWith('Assets/Images/')) {
     return filename;
   }
 
-  return `../Assets/Images/${filename}`;
+  return `Assets/Images/${filename}`;
 }
 
 
@@ -655,8 +689,6 @@ function showScreen(screen) {
 
   if (screen === 'main') {
     navigationItems[0]?.classList.add('active');
-  } else if (screen === 'mood' || screen === 'recommendations') {
-    navigationItems[1]?.classList.add('active');
   }
 
   document
@@ -722,10 +754,6 @@ function renderMoodCards() {
           ${m.emoji}
         </span>
 
-        <span class="text-xs uppercase tracking-[0.2em] text-forest/50 font-semibold">
-          Tap to choose
-        </span>
-
       </div>
 
       <h4 class="mt-4 text-lg font-bold text-forest">
@@ -750,7 +778,7 @@ function showRecommendations(moodKey) {
 
   document.getElementById('selected-mood-title').textContent =
     mood
-      ? `${mood.label} picks for you`
+      ? mood.label
       : 'Mood suggestions chosen for your current feeling.';
 
   const recIds =
@@ -775,6 +803,10 @@ function showRecommendations(moodKey) {
 
       : `<span class="text-5xl">${p.emoji}</span>`;
 
+    const addAction = p.requiresCustomization
+      ? `openModal(${p.id})`
+      : `addToCart(${p.id})`;
+
     return `
 
       <div class="card-hover rounded-3xl bg-cardBg p-5 border border-forest/10 shadow-sm transition hover:shadow-lg">
@@ -782,10 +814,6 @@ function showRecommendations(moodKey) {
         <div class="flex items-start justify-between gap-4">
 
           <div>
-
-            <span class="inline-flex items-center gap-2 rounded-full bg-goldAccent/10 px-3 py-1 text-[11px] font-semibold text-goldAccent">
-              Best for your mood
-            </span>
 
             <h4 class="mt-4 text-xl font-bold text-forest">
               ${p.name}
@@ -810,7 +838,7 @@ function showRecommendations(moodKey) {
           </span>
 
           <button
-            onclick="openModal(${p.id}, '${mood ? mood.verse.replace(/'/g, "\\'") : ''}')"
+            onclick="${addAction}"
             class="rounded-2xl bg-forest px-4 py-2 text-sm font-semibold text-white hover:bg-forestLight transition"
           >
             Add to Cart
@@ -878,6 +906,25 @@ function addToCart(id) {
     products.find(p => p.id === id);
 
   if (!product) {
+    return;
+  }
+
+  if (!product.requiresCustomization) {
+    const qty = quantities[id] || 1;
+    const existing = cart.find(c => c.id === id);
+
+    if (existing) {
+      existing.qty += qty;
+    } else {
+      cart.push({
+        ...product,
+        qty
+      });
+    }
+
+    quantities[id] = 1;
+    renderProducts();
+    renderCart();
     return;
   }
 
@@ -1044,12 +1091,16 @@ function renderCart() {
 
             <div class="flex items-center gap-2">
 
-              <button
-                onclick="openModal(${c.id})"
-                class="text-[10px] text-goldAccent font-semibold hover:underline"
-              >
-                Customize
-              </button>
+              ${
+                c.requiresCustomization
+                  ? `<button
+                      onclick="openModal(${c.id})"
+                      class="text-[10px] text-goldAccent font-semibold hover:underline"
+                    >
+                      Customize
+                    </button>`
+                  : ''
+              }
 
               <button
                 onclick="removeFromCart(${c.id})"
@@ -1117,6 +1168,10 @@ function openModal(id, verse = '') {
   const p =
     products.find(pr => pr.id === id);
 
+  if (!p || !p.requiresCustomization) {
+    return;
+  }
+
   const cartItem =
     cart.find(c => c.id === id);
 
@@ -1145,22 +1200,8 @@ function openModal(id, verse = '') {
   document.getElementById('modal-title').textContent =
     'Customize ' + p.name;
 
-  const verseEl =
-    document.getElementById('modal-verse');
-
-  if (verse) {
-
-    verseEl.textContent = verse;
-
-    verseEl.classList.remove('hidden');
-
-  } else {
-
-    verseEl.textContent = '';
-
-    verseEl.classList.add('hidden');
-
-  }
+  document.getElementById('special-instructions').value =
+    itemData.specialInstructions || '';
 
   document.getElementById('sugar-value').textContent =
     itemData.sugar + '%';
@@ -1255,6 +1296,12 @@ function closeModal() {
 
 function confirmCustomization() {
 
+  const target = getCurrentCustomizationTarget();
+  if (target) {
+    target.specialInstructions =
+      document.getElementById('special-instructions').value.trim();
+  }
+
   if (pendingAddProductId) {
 
     const product =
@@ -1279,6 +1326,7 @@ function confirmCustomization() {
         existing.qty += qty;
         existing.temp = itemData.temp;
         existing.sugar = itemData.sugar;
+        existing.specialInstructions = itemData.specialInstructions;
       } else {
         cart.push({
           ...product,
@@ -1438,35 +1486,45 @@ function checkoutCart() {
   document.getElementById('order-total').textContent =
     '₱' + total.toFixed(2);
 
+  const savedOrderType =
+    localStorage.getItem('orderType') || 'Dine-in';
+  document.getElementById('order-type-label').textContent =
+    /take.?out/i.test(savedOrderType) ? 'Take Away' : 'Enjoy Here';
 
-  document.getElementById('order-items-list').innerHTML =
-    cart.map(item => {
+  const itemsList = document.getElementById('order-items-list');
+  itemsList.innerHTML = '';
 
-      return `
+  cart.forEach(item => {
+    const row = document.createElement('div');
+    const name = document.createElement('p');
+    const price = document.createElement('p');
 
-        <div class="rounded-2xl bg-forest/10 p-3 border border-forest/10">
+    name.className = 'text-sm font-semibold text-forest';
+    name.textContent = `${item.name} × ${item.qty}`;
+    price.className = 'mt-1 text-xs text-forest/70';
+    price.textContent =
+      `₱${item.price.toFixed(2)} each · Item total ₱${(item.price * item.qty).toFixed(2)}`;
 
-          <p class="text-sm font-semibold text-forest">
-            ${item.name} × ${item.qty}
-          </p>
+    row.append(name, price);
 
-          <p class="text-xs text-forest/60 mt-1">
-            Size: ${item.size}
-          </p>
+    if (item.requiresCustomization) {
+      const choices = document.createElement('p');
+      choices.className = 'mt-1 text-xs text-forest/60';
+      choices.textContent =
+        `Size: ${item.size || 'Medium'} · ${item.temp || 'Hot'} · ${item.sugar ?? 50}% sugar`;
+      row.appendChild(choices);
+    }
 
-          <p class="text-xs text-forest/60">
-            Drink Type: ${item.temp}
-          </p>
+    if (item.specialInstructions) {
+      const instructions = document.createElement('p');
+      instructions.className = 'mt-1 text-xs text-forest/70';
+      instructions.textContent =
+        `Special Instructions: ${item.specialInstructions}`;
+      row.appendChild(instructions);
+    }
 
-          <p class="text-xs text-forest/60">
-            Sugar: ${item.sugar}%
-          </p>
-
-        </div>
-
-      `;
-
-    }).join('');
+    itemsList.appendChild(row);
+  });
 
 
   document
@@ -1491,94 +1549,117 @@ function closeConfirmOrder() {
 }
 
 
-function confirmOrder() {
 
-  const total =
-    cart.reduce(
-      (sum, item) => sum + item.qty * item.price,
-      0
+async function confirmOrder() {
+  if (cart.length === 0) {
+    return;
+  }
+
+  const confirmButton = document.querySelector(
+    '#confirm-order-modal button[onclick*="confirmOrder"]'
+  );
+
+  if (confirmButton && confirmButton.disabled) {
+    return;
+  }
+
+  const originalButtonHTML = confirmButton
+    ? confirmButton.innerHTML
+    : '';
+
+  if (confirmButton) {
+    confirmButton.disabled = true;
+    confirmButton.textContent = 'Saving order...';
+  }
+
+  try {
+    const savedOrderType =
+      localStorage.getItem('orderType') || 'Dine-in';
+
+    const orderType = /take.?out/i.test(savedOrderType)
+      ? 'Take-out'
+      : 'Dine-in';
+
+    const payload = {
+      branch_id: KIOSK_BRANCH_ID,
+      order_type: orderType,
+
+      items: cart.map(item => ({
+        product_id: Number(item.id),
+        quantity: Number(item.qty),
+
+        size: item.requiresCustomization
+          ? (item.size || 'Medium')
+          : null,
+
+        temperature: item.requiresCustomization
+          ? (item.temp || 'Hot')
+          : null,
+
+        sugar_percent: item.requiresCustomization
+          ? Number(item.sugar ?? 50)
+          : null
+      }))
+    };
+
+    const response = await fetch('Ajax/create_order.php', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Accept': 'application/json'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    let data;
+
+    try {
+      data = await response.json();
+    } catch {
+      throw new Error(
+        'Invalid server response. Check create_order.php.'
+      );
+    }
+
+    if (!response.ok || !data.success) {
+      throw new Error(
+        data.message || 'Unable to save the order.'
+      );
+    }
+
+    // Display the order number returned by PHP.
+    document.getElementById('generated-order-number')
+      .textContent = data.order_number;
+
+    document.getElementById('confirm-order-modal')
+      .classList.add('hidden');
+
+    document.getElementById('order-created-modal')
+      .classList.remove('hidden');
+
+    // Clear the cart only after the database confirms success.
+    cart = [];
+    renderProducts();
+    renderCart();
+
+    console.log('Order saved in MySQL:', data);
+
+  } catch (error) {
+    console.error('Order submission failed:', error);
+
+    alert(
+      error.message ||
+      'Unable to save the order. Please try again.'
     );
 
-  const orderType = localStorage.getItem('orderType') || 'Dine-in';
-
-
-  const num =
-    Math.floor(Math.random() * 99) + 1;
-
-
-  const orderNumber =
-    '#' + String(num).padStart(2, '0');
-
-
-  const order = {
-
-    id: orderNumber,
-
-    number: orderNumber,
-
-    status: 'UNPAID',
-
-    timestamp: new Date().toISOString(),
-
-    type: orderType,
-
-    payment: 'Pending',
-
-    items: cart.map(item => ({
-
-      id: item.id,
-
-      name: item.name,
-
-      qty: item.qty,
-
-      size: item.size,
-
-      temp: item.temp,
-
-      sugar: item.sugar + '%',
-
-      price: item.price
-
-    })),
-
-    total
-
-  };
-
-
-  const unpaidOrders =
-    loadUnpaidOrders();
-
-
-  unpaidOrders.push(order);
-
-
-  saveUnpaidOrders(unpaidOrders);
-
-
-  document
-    .getElementById('generated-order-number')
-    .textContent = orderNumber;
-
-
-  document
-    .getElementById('confirm-order-modal')
-    .classList
-    .add('hidden');
-
-
-  document
-    .getElementById('order-created-modal')
-    .classList
-    .remove('hidden');
-
-
-  cart = [];
-
-  renderCart();
-
+  } finally {
+    if (confirmButton) {
+      confirmButton.disabled = false;
+      confirmButton.innerHTML = originalButtonHTML;
+    }
+  }
 }
+
 
 
 // ============================================================
@@ -1622,6 +1703,109 @@ function updateTime() {
 
 }
 
+// ============================================================
+// LOAD PRODUCTS FROM DATABASE
+// ============================================================
+
+const KIOSK_BRANCH_ID = 1; // 1 = Calamba, 2 = Lipa
+
+function getFallbackEmoji(productName, category) {
+  const name = String(productName || '').toLowerCase();
+
+  if (category === 'coffee') {
+    return '☕';
+  }
+
+  if (category === 'food') {
+    if (name.includes('lasagna') || name.includes('pasta')) {
+      return '🍝';
+    }
+
+    if (name.includes('brownie') || name.includes('chocolate')) {
+      return '🍫';
+    }
+
+    return '🍪';
+  }
+
+  return '🥤';
+}
+
+function mapDatabaseProduct(row) {
+  const category = String(row.category || '')
+    .trim()
+    .toLowerCase();
+
+  const image = String(row.image_url || '').trim();
+
+  return {
+    id: Number(row.id),
+    name: row.product_name,
+    desc: row.description || '',
+    price: Number(row.price),
+    requiresCustomization:
+      Number(row.requires_customization) === 1,
+    category,
+    tag: row.tag || '',
+    emoji: image || getFallbackEmoji(row.product_name, category),
+    moodTags: String(row.mood_tags || '')
+      .split(',')
+      .map(tag => tag.trim().toLowerCase())
+      .filter(Boolean),
+    bibleVerse: row.bible_verse || '',
+    availability: row.availability || 'Available'
+  };
+}
+
+async function loadProducts() {
+  const grid = document.getElementById('product-grid');
+
+  if (!grid) {
+    console.error('Product grid was not found.');
+    return;
+  }
+
+  grid.innerHTML = '<p>Loading menu...</p>';
+
+  try {
+    const response = await fetch(
+      `Ajax/get_products.php?branch_id=${KIOSK_BRANCH_ID}`,
+      {
+        headers: {
+          Accept: 'application/json'
+        }
+      }
+    );
+
+    const data = await response.json();
+
+    if (
+      !response.ok ||
+      !data.success ||
+      !Array.isArray(data.products)
+    ) {
+      throw new Error(
+        data.message || 'Unable to retrieve products.'
+      );
+    }
+
+    products = data.products.map(mapDatabaseProduct);
+
+    renderProducts();
+
+    console.log(
+      'Products loaded from MySQL:',
+      products.length
+    );
+
+  } catch (error) {
+    console.error('Product loading failed:', error);
+
+    grid.innerHTML =
+      '<p>Unable to load menu. Please check the database connection.</p>';
+  }
+}
+
 
 // ============================================================
 // INIT
@@ -1634,7 +1818,7 @@ setInterval(
   60000
 );
 
-renderProducts();
+loadProducts();
 
 renderCart();
 

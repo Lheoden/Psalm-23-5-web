@@ -3,45 +3,171 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Psalm 23:5 Coffee</title>
-   <link rel="stylesheet" href="../Assets/Css/Opening.css">
-</head>
-<body onclick="handleTouch()">
 
+    <title>Psalm 23:5 Coffee</title>
+
+    <!--
+        OPENING MODULE
+        This page serves as the starting screen of the customer kiosk.
+        It allows the customer to begin an order and select whether
+        the order is for Dine-in or Take-out.
+    -->
+
+    <!-- Fonts: Playfair Display (tagline) & Plus Jakarta Sans (UI text) -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@1,400;1,500&family=Plus+Jakarta+Sans:wght@500;600;700&display=swap" rel="stylesheet">
+
+    <!-- Stylesheet for the Opening / Order Type Selection screen -->
+    <link rel="stylesheet" href="Assets/Css/Opening.css">
+</head>
+
+<body onclick="handleTouch(event)">
+
+    <!-- =========================================================
+         1. KIOSK OPENING / SPLASH SCREEN
+         Touching anywhere (or the Start Your Order button) calls
+         handleTouch() to proceed to the Dine-in / Take-out selection.
+         ========================================================= -->
     <div class="splash-container">
+
+        <!-- Slowly zooming storefront background -->
+        <div class="bg-image"></div>
+
+        <!-- Dark overlay -->
         <div class="overlay"></div>
 
+        <!-- TOP: Branch status -->
+        <div class="status-badge">
+            <span class="status-dot"></span>
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <path d="M20 10c0 6-8 12-8 12S4 16 4 10a8 8 0 0 1 16 0Z"/><circle cx="12" cy="10" r="3"/>
+            </svg>
+            <span>Calamba Branch </span>
+        </div>
+
+        <!-- CENTER: Logo, tagline, call-to-action -->
         <div class="content">
-            <div class="logo-circle">
-                <img src="../Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee" class="logo-img">
+
+            <!-- Coffee shop logo with glow -->
+            <div class="logo-wrap">
+                <div class="logo-aura"></div>
+                <div class="logo-circle">
+                    <img
+                        src="Assets/Images/Logo.jpg"
+                        alt="Psalm 23:5 Coffee"
+                        class="logo-img"
+                    >
+                </div>
             </div>
-            
-            <h1 class="brand-name">Psalm 23:5 Coffee</h1>
-            <p class="tagline">"My cup overflows with your blessings."</p>
-            
-            <div class="footer-prompt">
-                <p>Touch anywhere</p>
+
+            <!-- Brand name stays in the page for screen readers; the logo already shows it -->
+            <h1 class="sr-only">Psalm 23:5 Coffee</h1>
+
+            <!-- Tagline with gold underline -->
+            <div class="tagline-wrap">
+                <p class="tagline">"My cup overflows with your blessings."</p>
+                <div class="tagline-line"></div>
+            </div>
+
+            <!-- Call-to-action (the whole screen is also touchable) -->
+            <button type="button" class="start-btn">
+                <svg class="icon-lg cup-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="M10 2v2"/><path d="M14 2v2"/><path d="M6 2v2"/>
+                    <path d="M16 8a1 1 0 0 1 1 1v8a4 4 0 0 1-4 4H7a4 4 0 0 1-4-4V9a1 1 0 0 1 1-1z"/>
+                    <path d="M17 12h2a3 3 0 0 1 0 6h-2"/>
+                </svg>
+                <span>START YOUR ORDER</span>
+                <svg class="icon-lg chevron-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                    <path d="m9 18 6-6-6-6"/>
+                </svg>
+            </button>
+
+        </div>
+
+        <!-- BOTTOM: Accepted payments -->
+        <div class="payment-note">
+            <svg class="icon-sm" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                <rect width="20" height="14" x="2" y="5" rx="2"/><line x1="2" x2="22" y1="10" y2="10"/>
+            </svg>
+            <span>Cash, GCash &amp; Cards Accepted</span>
+        </div>
+    </div>
+
+
+    <!-- =========================================================
+         2. ORDER TYPE SELECTION
+         After the opening screen, the customer chooses whether the
+         coffee is enjoyed in the cafe or taken away.
+
+         This corresponds to the first customer action in the
+         Customer Ordering TO-BE workflow:
+         "Customer selects Dine-in / Take-out."
+
+         NOTE: The wording on screen is "Enjoy Here" / "Take Away",
+         but the saved values stay "Dine-in" / "Take-out" so the
+         rest of the system is unaffected.
+         ========================================================= -->
+    <div id="selection-screen" class="screen hidden">
+
+        <!-- Same backdrop as the opening screen -->
+        <div class="bg-image"></div>
+        <div class="overlay"></div>
+
+        <div class="selection-content">
+
+            <!-- Small glowing logo -->
+            <div class="logo-wrap logo-sm">
+                <div class="logo-aura"></div>
+                <div class="logo-circle">
+                    <img src="Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee" class="logo-img">
+                </div>
+            </div>
+
+            <!-- Heading with gold underline -->
+            <div class="tagline-wrap selection-heading">
+                <h2 class="tagline">How would you like your coffee?</h2>
+                <div class="tagline-line"></div>
+            </div>
+
+            <div class="card-container">
+
+                <!-- ENJOY HERE (saved as "Dine-in") -->
+                <button type="button" class="option-card" onclick="selectOption('Dine In', event)">
+                    <span class="option-icon">
+                        <!-- Ceramic cup on a saucer -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M8 2.5v2"/><path d="M12 2v2.5"/><path d="M16 2.5v2"/>
+                            <path d="M4.5 8.5h12v5a4.5 4.5 0 0 1-4.5 4.5h-3a4.5 4.5 0 0 1-4.5-4.5z"/>
+                            <path d="M16.5 10h1.2a2.4 2.4 0 0 1 0 4.8h-1.5"/>
+                            <path d="M2.5 21h17"/>
+                        </svg>
+                    </span>
+                    <span class="option-title">Enjoy Here</span>
+                    <span class="option-sub">Served at your table</span>
+                </button>
+
+                <!-- TAKE AWAY (saved as "Take-out") -->
+                <button type="button" class="option-card" onclick="selectOption('Take Out', event)">
+                    <span class="option-icon">
+                        <!-- Lidded paper cup with sleeve -->
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
+                            <path d="M6 7h12"/>
+                            <path d="M7.5 4h9a1 1 0 0 1 1 1v2h-11V5a1 1 0 0 1 1-1z"/>
+                            <path d="M6.6 7l1.3 13a1.5 1.5 0 0 0 1.5 1.3h5.2a1.5 1.5 0 0 0 1.5-1.3L17.4 7"/>
+                            <path d="M7.2 12.5h9.6"/><path d="M7.5 16.5h9"/>
+                        </svg>
+                    </span>
+                    <span class="option-title">Take Away</span>
+                    <span class="option-sub">Packed to go</span>
+                </button>
+
             </div>
         </div>
     </div>
-    <div id="selection-screen" class="screen hidden">
-    <div class="selection-content">
-        <h2 class="selection-title">Dine In or Take Out?</h2>
-        
-        <div class="card-container">
-    <div class="card card-white" onclick="selectOption('Dine In', event)">
-        <div class="icon">🍴</div> 
-        <p>Dine In</p>
-    </div>
 
-    <div class="card card-tan" onclick="selectOption('Take Out', event)">
-        <div class="icon">🛍️</div>
-        <p>Take Out</p>
-    </div>
-</div>
-    </div>
-</div>
+    <!-- OPENING MODULE LOGIC -->
+    <script src="Assets/Js/Opening.js"></script>
 
-   <script src="../Assets/Js/Opening.js"></script>
 </body>
 </html>

@@ -4,9 +4,28 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Cashier Dashboard</title>
+
+  <!-- =========================================================
+       CASHIER MODULE
+       This page handles the Cashier side of Workflow 2:
+       Customer Ordering / Order Fulfillment.
+
+       Main responsibilities:
+       - Receive UNPAID orders from the Kiosk
+       - Let the Cashier select an order
+       - Accept and record the cash amount received
+       - Calculate change
+       - Confirm payment using "Mark as Paid"
+       - Update the order status to PAID
+       - Make the paid order available to the Bar interface
+       ========================================================= -->
+
+  <!-- UI libraries and fonts -->
   <script src="https://cdn.tailwindcss.com/3.4.17"></script>
   <script src="https://cdn.jsdelivr.net/npm/lucide@0.263.0/dist/umd/lucide.min.js"></script>
   <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@300;400;500;600;700&display=swap" rel="stylesheet" />
+
+  <!-- Tailwind theme configuration used by the Cashier UI -->
   <script>
     tailwind.config = {
       theme: {
@@ -24,15 +43,29 @@
     }
   </script>
 
-  <link rel="stylesheet" href="../Assets/Css/Global.css" />
-  <link rel="stylesheet" href="../Assets/Css/Cashier.css" />
+  <!-- Shared system styles + Cashier-specific styles -->
+  <link rel="stylesheet" href="Assets/Css/Global.css" />
+  <link rel="stylesheet" href="Assets/Css/Cashier.css" />
  </head>
+
  <body class="cashier-body">
+
+  <!-- =========================================================
+       CASHIER PAGE LAYOUT
+       Sidebar + main Cashier dashboard area
+       ========================================================= -->
   <div class="cashier-shell">
+
+   <!-- =========================================================
+        LEFT SIDEBAR
+        Displays the brand, current branch, time, and navigation.
+        ========================================================= -->
    <aside class="cashier-sidebar">
+
+    <!-- Brand / Logo -->
     <div class="brand-block">
      <div class="brand-icon-wrap">
-      <img src="../Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" class="brand-logo" />
+      <img src="Assets/Images/Logo.jpg" alt="Psalm 23:5 Coffee Logo" class="brand-logo" />
      </div>
      <div class="brand-meta">
       <span class="brand-main">Psalm 23:5</span>
@@ -40,6 +73,7 @@
      </div>
     </div>
 
+    <!-- Cashier navigation -->
     <nav class="sidebar-nav" aria-label="Main navigation">
      <button type="button" class="nav-item active">
       <span class="nav-icon"><i data-lucide="layout-grid" class="w-4 h-4"></i></span>
@@ -47,6 +81,7 @@
      </button>
     </nav>
 
+    <!-- Branch and current time -->
     <div class="sidebar-footer">
      <div class="sidebar-info-row"><i data-lucide="map-pin" class="w-4 h-4"></i><span>Calamba Branch</span></div>
      <div class="sidebar-info-row"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="sidebar-time">--</span></div>
@@ -54,18 +89,31 @@
     </div>
    </aside>
 
+
+   <!-- =========================================================
+        MAIN CASHIER DASHBOARD
+        ========================================================= -->
    <div class="cashier-main">
+
+    <!-- Dashboard header -->
     <header class="topbar">
      <div class="topbar-title">
       <h1>CASHIER DASHBOARD</h1>
       <p>Process orders, confirm payments, and serve with excellence.</p>
      </div>
-     <div class="topbar-quote">“Let all things be done decently and in order.”<span>– 1 Corinthians 14:40</span></div>
+
+     <div class="topbar-quote">
+      “Let all things be done decently and in order.”
+      <span>– 1 Corinthians 14:40</span>
+     </div>
+
+     <!-- Current branch and account information -->
      <div class="topbar-actions">
       <div class="branch-select" aria-label="Current branch">
        <i data-lucide="map-pin" class="w-4 h-4"></i>
        <span>Calamba Branch</span>
       </div>
+
       <div class="account-pill">
        <div class="avatar-badge">C</div>
        <div class="account-text">
@@ -73,125 +121,277 @@
         <span>Cashier</span>
        </div>
       </div>
+
       <button type="button" class="logout-btn" aria-label="Logout">
        <i data-lucide="log-out" class="w-4 h-4"></i>
       </button>
      </div>
     </header>
 
+
+    <!-- =========================================================
+         WORKFLOW 2 - CASHIER PROCESS
+         This section corresponds to these TO-BE steps:
+
+         1. Cashier selects unpaid order
+         2. Cashier receives cash payment
+         3. Cashier enters amount received
+         4. System calculates change
+         5. Cashier selects "Mark as Paid"
+         6. System updates order status to PAID
+         7. Paid order becomes available to the Bar interface
+         ========================================================= -->
     <main class="pos-layout">
+
+     <!-- ========================================================
+          1. UNPAID ORDER QUEUE
+          Orders created by the Kiosk appear here with UNPAID status.
+          Cashier.js loads these orders and allows the Cashier
+          to select one for processing.
+          ======================================================== -->
      <section class="queue-panel">
+
       <div class="panel-head">
        <div>
         <h2>ORDER QUEUE</h2>
-      <p>Upcoming orders from the kiosk.</p>
+        <p>Upcoming orders from the kiosk.</p>
        </div>
+
+       <!-- Reloads the current unpaid order queue -->
        <button type="button" class="refresh-btn" onclick="loadOrders()">
         <i data-lucide="refresh-cw" class="w-4 h-4"></i>
         Refresh
        </button>
       </div>
+
+      <!-- Filters unpaid orders by order type -->
       <div class="queue-filters" role="tablist" aria-label="Order type filters">
        <button type="button" class="queue-filter active" data-filter="all" onclick="setQueueFilter('all')">All (<span id="count-all">0</span>)</button>
        <button type="button" class="queue-filter" data-filter="Dine-in" onclick="setQueueFilter('Dine-in')">Dine-in (<span id="count-dine-in">0</span>)</button>
        <button type="button" class="queue-filter" data-filter="Take-out" onclick="setQueueFilter('Take-out')">Take-out (<span id="count-take-out">0</span>)</button>
       </div>
+
+      <!--
+           Cashier.js dynamically inserts UNPAID orders here.
+           Selecting an order opens its details in the right panel.
+      -->
       <div id="order-list" class="order-list"></div>
+
+      <!-- Displayed when there are no unpaid Kiosk orders -->
       <div id="empty-state" class="empty-state hidden">
        <p class="empty-title">No unpaid orders</p>
        <p class="empty-sub">New customer orders will appear here.</p>
       </div>
      </section>
 
+
+     <!-- ========================================================
+          2. SELECTED ORDER DETAILS + PAYMENT
+          This panel becomes visible after the Cashier selects
+          an unpaid order from the queue.
+          ======================================================== -->
      <section class="detail-panel">
-       <div id="detail-panel" class="detail-card hidden">
+
+      <div id="detail-panel" class="detail-card hidden">
+
+       <!-- Selected order number, type, and payment status -->
        <div class="detail-header">
         <div>
          <p class="eyebrow">PROCESSING ORDER</p>
          <h2 id="detail-order-number">Order #000</h2>
          <p id="detail-order-type" class="order-type-badge">Dine-in</p>
         </div>
+
+        <!-- Before payment, the order remains pending / unpaid -->
         <span id="detail-status" class="status-badge">PENDING PAYMENT</span>
        </div>
 
+
+       <!-- Order review before accepting payment -->
        <div class="detail-intro">
         <span>Verify the order details and proceed with payment.</span>
+
+        <!-- Optional order editing before payment confirmation -->
         <button type="button" class="edit-btn" onclick="openEditModal()">
          <i data-lucide="pencil" class="w-4 h-4"></i>
          Edit Order
         </button>
        </div>
 
+
+       <!-- =====================================================
+            ORDER ITEMS
+            Displays the products and customizations received
+            from the Kiosk order.
+            ===================================================== -->
        <div class="section-heading">
         <h3>ITEMS</h3>
        </div>
 
        <div class="items-table">
-        <div class="items-table-head"><span>ITEM</span><span>DETAILS</span><span>QTY</span><span>PRICE</span><span>SUBTOTAL</span></div>
+        <div class="items-table-head">
+         <span>ITEM</span>
+         <span>DETAILS</span>
+         <span>QTY</span>
+         <span>PRICE</span>
+         <span>SUBTOTAL</span>
+        </div>
+
+        <!-- Cashier.js dynamically renders selected order items here -->
         <div id="detail-items" class="detail-items"></div>
        </div>
 
+
+       <!-- =====================================================
+            3. CASH PAYMENT PROCESS
+            The Cashier receives physical cash from the customer,
+            then enters the amount received into the system.
+
+            NOTE:
+            The system does NOT automatically verify physical cash.
+            The Cashier manually confirms the payment.
+            ===================================================== -->
        <div class="payment-grid">
+
+        <!-- Order total calculated from the Kiosk order -->
         <div class="mini-card subtotal-card">
          <p>TOTAL AMOUNT</p>
          <strong id="detail-subtotal">₱0.00</strong>
-         <div class="summary-line"><span>Items</span><span id="detail-item-count">0</span></div>
-         <div class="summary-line"><span>Subtotal</span><span id="detail-subtotal-copy">₱0.00</span></div>
-         <div class="summary-total"><span>Total</span><strong id="detail-total-copy">₱0.00</strong></div>
+
+         <div class="summary-line">
+          <span>Items</span>
+          <span id="detail-item-count">0</span>
+         </div>
+
+         <div class="summary-line">
+          <span>Subtotal</span>
+          <span id="detail-subtotal-copy">₱0.00</span>
+         </div>
+
+         <div class="summary-total">
+          <span>Total</span>
+          <strong id="detail-total-copy">₱0.00</strong>
+         </div>
         </div>
 
+
+        <!-- Cash is the supported payment method in the current prototype -->
         <div class="mini-card payment-card">
          <p>PAYMENT</p>
-         <button id="payment-cash" type="button" class="payment-option active">Cash</button>
+
+         <button id="payment-cash" type="button" class="payment-option active">
+          Cash
+         </button>
 
          <div id="cash-fields" class="cash-fields">
+
+          <!--
+               WORKFLOW STEP:
+               Cashier enters amount received.
+          -->
           <label for="cash-received">Amount Received</label>
-          <input id="cash-received" type="number" min="0" step="0.01" value="" oninput="updateCashChange()" placeholder="₱0.00" />
+
+          <input
+           id="cash-received"
+           type="number"
+           min="0"
+           step="0.01"
+           value=""
+           oninput="updateCashChange()"
+           placeholder="₱0.00"
+          />
+
+          <!--
+               WORKFLOW STEP:
+               updateCashChange() calculates the customer's change
+               based on the amount entered and the order total.
+          -->
           <div class="cash-meta">
            <span>Change</span>
            <strong id="cash-change">₱0.00</strong>
           </div>
+
          </div>
         </div>
        </div>
 
+
+       <!-- =====================================================
+            4. PAYMENT CONFIRMATION / MARK AS PAID
+
+            WORKFLOW STEP:
+            Cashier selects "Mark as Paid".
+
+            markAsPaid() updates the selected order from UNPAID
+            to PAID. After this, the paid order becomes available
+            to the Bar interface for preparation.
+            ===================================================== -->
        <div class="action-row">
+
         <button id="mark-paid" type="button" onclick="markAsPaid()" class="primary-btn">
          <i data-lucide="check" class="w-4 h-4"></i>
          Mark as Paid
         </button>
+
+        <button id="void-order" type="button" onclick="openVoidModal()" class="void-btn">
+         Void Order
+        </button>
+
        </div>
       </div>
 
+
+      <!-- Default state before an unpaid order is selected -->
       <div id="detail-empty" class="detail-empty">
        <p class="empty-title">Select an order</p>
        <p class="empty-sub">Choose an order from the queue to view and process it.</p>
       </div>
+
      </section>
     </main>
    </div>
   </div>
 
+
+  <!-- =========================================================
+       PAYMENT SUCCESS MESSAGE
+       Shown after an order is successfully marked as PAID.
+       ========================================================= -->
   <div id="success-toast" class="success-toast hidden">
    <p id="success-text">Order paid successfully.</p>
   </div>
 
+
+  <!-- =========================================================
+       EDIT ORDER MODAL
+       Allows the Cashier to adjust an order before payment.
+       This is separate from the main payment/status workflow.
+       ========================================================= -->
   <div id="edit-modal" class="modal-backdrop hidden">
+
    <div class="edit-modal-card">
+
     <div class="modal-header">
      <div>
       <p class="modal-eyebrow">EDIT ORDER</p>
       <h2>Update items before payment</h2>
      </div>
+
      <button type="button" onclick="closeEditModal()" class="modal-close-btn" aria-label="Close edit order modal">
       <i data-lucide="x" class="w-5 h-5"></i>
      </button>
     </div>
 
+
     <div class="modal-body">
+
+     <!-- Existing selected-order items are rendered here -->
      <div id="modal-items" class="modal-items"></div>
 
+
+     <!-- Optional additional item before payment -->
      <div class="modal-add-row">
+
       <select id="new-item-type">
        <option value="Americano">Americano</option>
        <option value="Latte">Latte</option>
@@ -199,18 +399,76 @@
        <option value="Cookie">Cookie</option>
        <option value="Pasta">Pasta</option>
       </select>
-      <button type="button" onclick="addModalItem()" class="add-item-btn">Add Item</button>
+
+      <button type="button" onclick="addModalItem()" class="add-item-btn">
+       Add Item
+      </button>
+
      </div>
 
+
      <div class="modal-footer">
+
       <p>Change quantities or remove items before saving.</p>
-      <button type="button" onclick="saveOrderChanges()" class="save-btn">Save Changes</button>
+
+      <button type="button" onclick="saveOrderChanges()" class="save-btn">
+       Save Changes
+      </button>
+
      </div>
     </div>
    </div>
   </div>
 
-  <script src="../Assets/Js/Global.js"></script>
-  <script src="../Assets/Js/Cashier.js"></script>
+  <div id="void-modal" class="modal-backdrop hidden">
+   <div class="edit-modal-card void-modal-card" role="dialog" aria-modal="true" aria-labelledby="void-modal-title">
+    <div class="modal-header">
+     <div>
+      <p class="modal-eyebrow">VOID ORDER</p>
+      <h2 id="void-modal-title">Confirm order void</h2>
+     </div>
+
+     <button type="button" onclick="closeVoidModal()" class="modal-close-btn" aria-label="Close void order modal">
+      <i data-lucide="x" class="w-5 h-5"></i>
+     </button>
+    </div>
+
+    <div class="modal-body">
+     <p class="void-modal-copy">This removes the unpaid order from the cashier queue. Enter a reason to continue.</p>
+     <label class="void-reason-label" for="void-reason">Reason for voiding</label>
+     <textarea id="void-reason" class="void-reason-input" rows="4" required aria-describedby="void-reason-error"></textarea>
+     <p id="void-reason-error" class="void-reason-error hidden" role="alert">Enter a reason before confirming.</p>
+
+     <div class="modal-footer void-modal-footer">
+      <button type="button" onclick="closeVoidModal()" class="void-cancel-btn">Cancel</button>
+      <button type="button" onclick="confirmVoidOrder()" class="void-confirm-btn">Confirm Void Order</button>
+     </div>
+    </div>
+   </div>
+  </div>
+
+
+  <!-- =========================================================
+       JAVASCRIPT FILES
+
+       Global.js
+       = shared functions used across system interfaces.
+
+       Cashier.js
+       = Cashier workflow logic:
+         - loadOrders()
+         - order selection
+         - payment amount input
+         - change calculation
+         - markAsPaid()
+         - voidOrder()
+         - transfer of PAID orders to the Bar workflow
+
+       Scripts are loaded at the bottom so the HTML interface
+       exists before JavaScript tries to access its elements.
+       ========================================================= -->
+  <script src="Assets/Js/Global.js"></script>
+  <script src="Assets/Js/Cashier.js"></script>
+
  </body>
 </html>

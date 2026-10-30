@@ -13,15 +13,15 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
             { id: 'C1003', time: '2026-05-04T10:30:00', items: ['Pasta', 'Espresso'], payment: 'Cash', status: 'Completed', total: 275, category: 'Food' }
           ],
           inventory: {
-            coffeeBeans: { label: 'Coffee Beans', stock: 2200, containers: 2, servingsPerContainer: 100, threshold: 400 },
-            milk: { label: 'Milk', stock: 40, containers: 2, servingsPerContainer: 20, threshold: 15 },
-            syrup: { label: 'Syrup', stock: 18, containers: 3, servingsPerContainer: 8, threshold: 8 },
-            sugar: { label: 'Sugar', stock: 12, containers: 2, servingsPerContainer: 20, threshold: 8 },
-            hotCups: { label: 'Hot Cups', stock: 42, containers: 2, servingsPerContainer: 25, threshold: 15 },
-            coldCups: { label: 'Cold Cups', stock: 28, containers: 2, servingsPerContainer: 20, threshold: 10 },
-            lids: { label: 'Lids', stock: 36, containers: 3, servingsPerContainer: 12, threshold: 12 },
-            pasta: { label: 'Pasta', stock: 8, containers: 1, servingsPerContainer: 8, threshold: 3 },
-            cookies: { label: 'Cookies', stock: 12, containers: 2, servingsPerContainer: 6, threshold: 4 }
+            coffeeBeans: { label: 'Coffee Beans', stock: 2, unit: 'bag', threshold: 1 },
+            milk: { label: 'Milk', stock: 3, unit: 'box', threshold: 1 },
+            syrup: { label: 'Syrup', stock: 3, unit: 'bottle', threshold: 1 },
+            sugar: { label: 'Sugar', stock: 2, unit: 'pack', threshold: 1 },
+            hotCups: { label: 'Hot Cups', stock: 42, unit: 'piece', threshold: 15 },
+            coldCups: { label: 'Cold Cups', stock: 28, unit: 'piece', threshold: 10 },
+            lids: { label: 'Lids', stock: 36, unit: 'piece', threshold: 12 },
+            pasta: { label: 'Pasta', stock: 8, unit: 'serving', threshold: 3 },
+            cookies: { label: 'Cookies', stock: 12, unit: 'piece', threshold: 4 }
           },
           menu: [
             { id: 'm1', name: 'Americano', price: 120, category: 'Coffee', mood: ['Focused'], verse: 'Psalm 23:5', image: 'Americano.png', disabled: false },
@@ -50,15 +50,15 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
             { id: 'L2002', time: '2026-05-04T09:50:00', items: ['Cookie', 'Espresso'], payment: 'GCash', status: 'Completed', total: 145, category: 'Food' }
           ],
           inventory: {
-            coffeeBeans: { label: 'Coffee Beans', stock: 1800, containers: 2, servingsPerContainer: 100, threshold: 350 },
-            milk: { label: 'Milk', stock: 28, containers: 2, servingsPerContainer: 20, threshold: 15 },
-            syrup: { label: 'Syrup', stock: 14, containers: 2, servingsPerContainer: 8, threshold: 8 },
-            sugar: { label: 'Sugar', stock: 10, containers: 2, servingsPerContainer: 20, threshold: 8 },
-            hotCups: { label: 'Hot Cups', stock: 30, containers: 2, servingsPerContainer: 20, threshold: 10 },
-            coldCups: { label: 'Cold Cups', stock: 22, containers: 2, servingsPerContainer: 20, threshold: 10 },
-            lids: { label: 'Lids', stock: 30, containers: 2, servingsPerContainer: 15, threshold: 12 },
-            pasta: { label: 'Pasta', stock: 5, containers: 1, servingsPerContainer: 5, threshold: 3 },
-            cookies: { label: 'Cookies', stock: 7, containers: 1, servingsPerContainer: 7, threshold: 4 }
+            coffeeBeans: { label: 'Coffee Beans', stock: 2, unit: 'bag', threshold: 1 },
+            milk: { label: 'Milk', stock: 2, unit: 'box', threshold: 1 },
+            syrup: { label: 'Syrup', stock: 2, unit: 'bottle', threshold: 1 },
+            sugar: { label: 'Sugar', stock: 2, unit: 'pack', threshold: 1 },
+            hotCups: { label: 'Hot Cups', stock: 30, unit: 'piece', threshold: 10 },
+            coldCups: { label: 'Cold Cups', stock: 22, unit: 'piece', threshold: 10 },
+            lids: { label: 'Lids', stock: 30, unit: 'piece', threshold: 12 },
+            pasta: { label: 'Pasta', stock: 5, unit: 'serving', threshold: 3 },
+            cookies: { label: 'Cookies', stock: 7, unit: 'piece', threshold: 4 }
           },
           menu: [
             { id: 'm4', name: 'Mocha Latte', price: 165, category: 'Coffee', mood: ['Tired'], verse: 'Psalm 23:4', image: 'Mocha latte.png', disabled: false },
@@ -114,6 +114,16 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
           Object.keys(defaults[branch].inventory).forEach(key => {
             if (!data[branch].inventory[key]) {
               data[branch].inventory[key] = defaults[branch].inventory[key];
+              return;
+            }
+
+            const item = data[branch].inventory[key];
+            const defaultItem = defaults[branch].inventory[key];
+
+            // Migrate the old prototype inventory model (raw-looking quantities +
+            // containers/servings) to simple countable stock units used by Workflow 3.
+            if (!item.unit || 'containers' in item || 'servingsPerContainer' in item) {
+              data[branch].inventory[key] = { ...defaultItem };
             }
           });
         }
@@ -131,7 +141,8 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
       saveData();
       currentBranch = 'calamba';
       document.getElementById('branch-select').value = currentBranch;
-      document.getElementById('branch-name').textContent = 'Calamba';
+      const branchName = document.getElementById('branch-name');
+      if (branchName) branchName.textContent = 'Calamba';
       renderBranchInfo();
       showTab('overview');
       renderOverview();
@@ -144,7 +155,8 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
 
     function changeBranch(branch) {
       currentBranch = branch;
-      document.getElementById('branch-name').textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
+      const branchName = document.getElementById('branch-name');
+      if (branchName) branchName.textContent = branch.charAt(0).toUpperCase() + branch.slice(1);
       renderBranchInfo();
       renderOverview();
       renderSalesTable();
@@ -156,12 +168,17 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
 
     function showTab(tab) {
       ['overview', 'sales', 'inventory', 'reports', 'menu', 'users'].forEach(section => {
-        document.getElementById(section).classList.toggle('hidden', section !== tab);
-        document.getElementById(`tab-${section}`).classList.toggle('bg-forest', section === tab);
-        document.getElementById(`tab-${section}`).classList.toggle('text-white', section === tab);
-        document.getElementById(`tab-${section}`).classList.toggle('bg-white', section !== tab);
+        const sectionElement = document.getElementById(section);
+        const tabButton = document.getElementById(`tab-${section}`);
+
+        if (sectionElement) sectionElement.classList.toggle('hidden', section !== tab);
+        if (tabButton) tabButton.classList.toggle('active', section === tab);
       });
-      if (tab === 'inventory') renderInventory();
+
+      if (tab === 'inventory') {
+        renderInventory();
+        if (window.lucide) lucide.createIcons();
+      }
       if (tab === 'reports') renderReports();
     }
 
@@ -171,31 +188,95 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
 
     function renderBranchInfo() {
       const data = getCurrentBranchData();
-      document.getElementById('branch-active').textContent = data.orders.length;
-      document.getElementById('branch-reports').textContent = data.reports.length;
+      const branchName = document.getElementById('branch-name');
+      const branchActive = document.getElementById('branch-active');
+      const branchReports = document.getElementById('branch-reports');
+
+      if (branchName) branchName.textContent = currentBranch.charAt(0).toUpperCase() + currentBranch.slice(1);
+      if (branchActive) branchActive.textContent = data.orders.length;
+      if (branchReports) branchReports.textContent = data.reports.length;
     }
 
     function renderOverview() {
       const data = getCurrentBranchData();
       const today = new Date().toISOString().slice(0,10);
-      const todaysSales = data.orders.filter(order => ((order.time || order.timestamp || '').startsWith(today))).reduce((sum, order) => sum + (order.total || 0), 0);
-      const ordersCompleted = data.orders.length;
-      const topItem = getTopItem(data.orders);
-      const lowStock = getLowStockAlerts(data.inventory);
-      const pendingRequests = data.requests.filter(request => request.status === 'Pending').length;
-      const reportCount = data.reports.length;
+      const todaysOrders = data.orders.filter(order => ((order.time || order.timestamp || '').startsWith(today)));
+      const todaysSales = todaysOrders.reduce((sum, order) => sum + Number(order.total || 0), 0);
+      const lowStock = Object.values(data.inventory || {}).filter(item => item.stock <= item.threshold);
 
-      document.getElementById('kpi-sales').textContent = `₱${todaysSales.toFixed(2)}`;
-      document.getElementById('kpi-orders').textContent = ordersCompleted;
-      document.getElementById('kpi-top-item').textContent = topItem || '-';
-      document.getElementById('kpi-low-stock').textContent = lowStock.length;
-      document.getElementById('kpi-pending-requests').textContent = pendingRequests;
-      document.getElementById('kpi-reports').textContent = reportCount;
+      const salesEl = document.getElementById('kpi-sales');
+      const ordersEl = document.getElementById('kpi-orders');
+      const lowStockEl = document.getElementById('kpi-low-stock');
+      const branchesEl = document.getElementById('kpi-active-branches');
 
-      renderSalesPerDay(data.orders);
-      renderLowStockList(lowStock);
-      renderNotifications(data.requests);
-      renderActivityLog(data.activityLog);
+      if (salesEl) salesEl.textContent = `₱${todaysSales.toFixed(2)}`;
+      if (ordersEl) ordersEl.textContent = todaysOrders.length;
+      if (lowStockEl) lowStockEl.textContent = lowStock.length;
+      if (branchesEl) branchesEl.textContent = Object.keys(branchData).length;
+
+      renderDashboardRecentOrders(data.orders);
+      renderDashboardLowStock(lowStock);
+    }
+
+    function renderDashboardRecentOrders(orders) {
+      const table = document.getElementById('dashboard-recent-orders');
+      if (!table) return;
+
+      const branchLabel = currentBranch.charAt(0).toUpperCase() + currentBranch.slice(1);
+      const recentOrders = [...(orders || [])]
+        .sort((a, b) => new Date(b.time || b.timestamp || 0) - new Date(a.time || a.timestamp || 0))
+        .slice(0, 5);
+
+      if (!recentOrders.length) {
+        table.innerHTML = '<tr><td colspan="6" class="empty-table">No recent orders to display.</td></tr>';
+        return;
+      }
+
+      table.innerHTML = recentOrders.map(order => {
+        const itemList = (order.items || [])
+          .map(item => typeof item === 'string' ? item : item.name)
+          .filter(Boolean)
+          .join(', ');
+
+        const rawTime = order.time || order.timestamp || '';
+        const parsedTime = rawTime ? new Date(rawTime) : null;
+        const timeLabel = parsedTime && !Number.isNaN(parsedTime.getTime())
+          ? parsedTime.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+          : '—';
+
+        return `
+          <tr>
+            <td class="order-number">${formatOrderNumber(order.id || order.number)}</td>
+            <td>${itemList || '—'}</td>
+            <td>${branchLabel}</td>
+            <td class="order-total">₱${Number(order.total || 0).toFixed(2)}</td>
+            <td><span class="status-badge">${order.status || '—'}</span></td>
+            <td>${timeLabel}</td>
+          </tr>`;
+      }).join('');
+    }
+
+    function renderDashboardLowStock(items) {
+      const container = document.getElementById('dashboard-low-stock');
+      if (!container) return;
+
+      if (!items.length) {
+        container.innerHTML = '<div class="empty-state">No low stock items.</div>';
+        return;
+      }
+
+      container.innerHTML = items.slice(0, 5).map(item => `
+        <div class="stock-item">
+          <div class="stock-icon"><i data-lucide="package-open"></i></div>
+          <div class="stock-copy">
+            <strong>${item.label}</strong>
+            <span>${item.stock} remaining</span>
+          </div>
+          <span class="low-badge">Low</span>
+        </div>
+      `).join('');
+
+      if (window.lucide) lucide.createIcons();
     }
 
     function addActivity(message) {
@@ -325,41 +406,226 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
       return Object.entries(inventory).map(([key, value]) => ({ key, ...value }));
     }
 
+    function getInventoryCategory(item) {
+      const packagingKeys = ['hotCups', 'coldCups', 'lids'];
+      const foodKeys = ['pasta', 'cookies'];
+
+      if (packagingKeys.includes(item.key)) return 'Packaging';
+      if (foodKeys.includes(item.key)) return 'Food';
+      return 'Ingredient';
+    }
+
+    function formatInventoryQuantity(value, unit) {
+      const quantity = Number(value);
+      const safeUnit = unit || 'unit';
+      const plural = quantity === 1 ? safeUnit : `${safeUnit}s`;
+      return `${quantity} ${plural}`;
+    }
+
     function renderInventory() {
-      const data = getCurrentBranchData();
       const items = getInventoryItems();
       const table = document.getElementById('ingredient-table');
-      const ingredientSelect = document.getElementById('request-ingredient');
-      const lowStock = items.filter(item => item.stock <= item.threshold);
-      const pendingRequests = data.requests.filter(request => request.status === 'Pending').length;
-      const reportCount = data.reports.length;
+      const lowStock = items.filter(item => Number(item.stock) <= Number(item.threshold));
+
+      if (!table) return;
+
+      document.getElementById('inv-total-ingredients').textContent = items.length;
+      document.getElementById('inv-low-stock-count').textContent = lowStock.length;
+
+      const branchLabel = document.getElementById('inventory-branch-label');
+      if (branchLabel) {
+        branchLabel.textContent = `${currentBranch.charAt(0).toUpperCase() + currentBranch.slice(1)} Branch`;
+      }
 
       table.innerHTML = items.map(item => {
-        const servingsRemaining = item.containers * item.servingsPerContainer;
-        const fill = servingsRemaining ? Math.min(100, Math.round((item.stock / servingsRemaining) * 100)) : 0;
-        const status = item.stock <= item.threshold ? 'Low Stock' : '';
+        const isLow = Number(item.stock) <= Number(item.threshold);
         return `
-          <tr class="border-t border-forest/10">
-            <td class="py-4 font-medium text-forest">${item.label}</td>
-            <td class="py-4">${item.stock}</td>
-            <td class="py-4">${item.containers}</td>
-            <td class="py-4">${servingsRemaining}</td>
-            <td class="py-4">
-              <div class="mb-2 h-2 overflow-hidden rounded-full bg-forest/10">
-                <div class="h-2 rounded-full bg-forest" style="width:${fill}%"></div>
-              </div>
-              <span class="text-xs font-semibold ${item.stock <= item.threshold ? 'text-rose-600' : 'text-forest/70'}">${status}</span>
+          <tr data-inventory-name="${String(item.label).toLowerCase()}">
+            <td>
+              <span class="inventory-item-name">${item.label}</span>
+            </td>
+            <td>
+              <span class="inventory-stock-value">${formatInventoryQuantity(item.stock, item.unit)}</span>
+            </td>
+            <td>${formatInventoryQuantity(item.threshold, item.unit)}</td>
+            <td>
+              <span class="inventory-status ${isLow ? 'low' : 'good'}">
+                ${isLow ? 'LOW STOCK' : 'GOOD'}
+              </span>
+            </td>
+            <td>
+              <button
+                type="button"
+                class="inventory-edit-btn"
+                onclick="openStockModal('${item.key}')"
+                aria-label="Update ${item.label} stock"
+                title="Update stock"
+              >
+                <i data-lucide="pencil"></i>
+              </button>
             </td>
           </tr>`;
       }).join('');
 
-      ingredientSelect.innerHTML = items.map(item => `<option value="${item.key}">${item.label}</option>`).join('');
-      document.getElementById('inv-total-ingredients').textContent = items.length;
-      document.getElementById('inv-low-stock-count').textContent = lowStock.length;
-      document.getElementById('inv-pending-requests').textContent = pendingRequests;
-      document.getElementById('inv-report-count').textContent = reportCount;
-      document.getElementById('inventory-alert-list').innerHTML = lowStock.length ? lowStock.map(item => `<li class="rounded-2xl bg-cream p-3 border border-forest/10">${item.label} is low (${item.stock} left)</li>`).join('') : '<li class="text-forest/60">All ingredients are within safe stock ranges.</li>';
-      renderRequestList();
+      filterInventoryTable();
+
+      if (window.lucide) lucide.createIcons();
+    }
+
+    function filterInventoryTable() {
+      const searchInput = document.getElementById('inventory-search');
+      const table = document.getElementById('ingredient-table');
+      if (!table) return;
+
+      const query = (searchInput?.value || '').trim().toLowerCase();
+      const rows = Array.from(table.querySelectorAll('tr'));
+
+      let visibleRows = 0;
+
+      rows.forEach(row => {
+        const itemName = row.dataset.inventoryName || '';
+        const visible = !query || itemName.includes(query);
+        row.style.display = visible ? '' : 'none';
+        if (visible) visibleRows++;
+      });
+
+      let emptyRow = table.querySelector('.inventory-search-empty');
+
+      if (visibleRows === 0 && rows.length > 0) {
+        if (!emptyRow) {
+          emptyRow = document.createElement('tr');
+          emptyRow.className = 'inventory-search-empty';
+          emptyRow.innerHTML = '<td colspan="5" class="inventory-empty-row">No inventory items match your search.</td>';
+          table.appendChild(emptyRow);
+        }
+      } else if (emptyRow) {
+        emptyRow.remove();
+      }
+    }
+
+    function openStockModal(itemKey = null) {
+      const modal = document.getElementById('stock-modal');
+      const select = document.getElementById('stock-item-select');
+      const items = getInventoryItems();
+
+      if (!modal || !select) return;
+
+      select.innerHTML = items.map(item =>
+        `<option value="${item.key}">${item.label}</option>`
+      ).join('');
+
+      if (itemKey && items.some(item => item.key === itemKey)) {
+        select.value = itemKey;
+      }
+
+      clearStockValidation();
+      syncSelectedInventoryItem();
+
+      modal.classList.remove('hidden');
+      modal.setAttribute('aria-hidden', 'false');
+
+      if (window.lucide) lucide.createIcons();
+
+      setTimeout(() => {
+        const quantityInput = document.getElementById('stock-new-quantity');
+        if (quantityInput) quantityInput.focus();
+      }, 0);
+    }
+
+    function closeStockModal() {
+      const modal = document.getElementById('stock-modal');
+      if (!modal) return;
+
+      modal.classList.add('hidden');
+      modal.setAttribute('aria-hidden', 'true');
+      clearStockValidation();
+    }
+
+    function syncSelectedInventoryItem() {
+      const select = document.getElementById('stock-item-select');
+      const currentValue = document.getElementById('stock-current-value');
+      const thresholdValue = document.getElementById('stock-threshold-value');
+      const quantityInput = document.getElementById('stock-new-quantity');
+
+      if (!select) return;
+
+      const item = getCurrentBranchData().inventory?.[select.value];
+      if (!item) return;
+
+      if (currentValue) currentValue.textContent = formatInventoryQuantity(item.stock, item.unit);
+      if (thresholdValue) thresholdValue.textContent = formatInventoryQuantity(item.threshold, item.unit);
+
+      if (quantityInput) {
+        quantityInput.value = item.stock;
+        quantityInput.min = '0';
+      }
+
+      clearStockValidation();
+    }
+
+    function showStockValidation(message) {
+      const messageElement = document.getElementById('stock-validation-message');
+      if (!messageElement) return;
+
+      messageElement.textContent = message;
+      messageElement.classList.remove('hidden');
+    }
+
+    function clearStockValidation() {
+      const messageElement = document.getElementById('stock-validation-message');
+      if (!messageElement) return;
+
+      messageElement.textContent = '';
+      messageElement.classList.add('hidden');
+    }
+
+    function updateInventoryStock() {
+      const select = document.getElementById('stock-item-select');
+      const quantityInput = document.getElementById('stock-new-quantity');
+
+      if (!select || !quantityInput) return;
+
+      const rawValue = quantityInput.value.trim();
+      const newQuantity = Number(rawValue);
+      const inventoryItem = getCurrentBranchData().inventory?.[select.value];
+
+      clearStockValidation();
+
+      // Workflow 3: validate quantity. Invalid values are rejected and re-entered.
+      if (!inventoryItem) {
+        showStockValidation('Please select a valid inventory item.');
+        return;
+      }
+
+      if (rawValue === '' || !Number.isFinite(newQuantity) || newQuantity < 0) {
+        showStockValidation('Enter a valid stock quantity of 0 or higher.');
+        quantityInput.focus();
+        return;
+      }
+
+      // Valid quantity -> update inventory record.
+      inventoryItem.stock = newQuantity;
+
+      // Persist existing Admin inventory data.
+      saveData();
+
+      // Workflow 3: check threshold and immediately display LOW STOCK / GOOD.
+      const isLowStock = newQuantity <= Number(inventoryItem.threshold);
+
+      renderInventory();
+      renderOverview();
+      closeStockModal();
+
+      const updateMessage = document.getElementById('inventory-update-message');
+      if (updateMessage) {
+        updateMessage.textContent = `${inventoryItem.label} updated to ${formatInventoryQuantity(newQuantity, inventoryItem.unit)}. Status: ${isLowStock ? 'LOW STOCK' : 'GOOD'}.`;
+        updateMessage.classList.remove('hidden');
+
+        window.clearTimeout(window.inventoryMessageTimer);
+        window.inventoryMessageTimer = window.setTimeout(() => {
+          updateMessage.classList.add('hidden');
+        }, 4000);
+      }
     }
 
     function submitInventoryRequest() {
@@ -388,6 +654,7 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
     function renderRequestList() {
       const requests = getCurrentBranchData().requests;
       const list = document.getElementById('request-list');
+      if (!list) return;
       list.innerHTML = requests.length ? requests.map(request => `
         <div class="rounded-3xl bg-cream p-4 border border-forest/10">
           <div class="flex items-center justify-between gap-3">
@@ -607,5 +874,18 @@ const STORAGE_DATA_KEY = 'admin_dashboard_data';
 
     window.addEventListener('DOMContentLoaded', () => {
       loadData();
-      document.getElementById('branch-select').value = 'calamba';
+
+      const branchSelect = document.getElementById('branch-select');
+      if (branchSelect) branchSelect.value = currentBranch;
+
+      const dateElement = document.getElementById('admin-date');
+      if (dateElement) {
+        dateElement.textContent = new Date().toLocaleDateString([], {
+          month: 'short',
+          day: 'numeric',
+          year: 'numeric'
+        });
+      }
+
+      if (window.lucide) lucide.createIcons();
     });
