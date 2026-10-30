@@ -1,53 +1,74 @@
-// ============================================================
-// CASHIER MODULE
-// This file handles the Cashier side of Workflow 2.
-//
-// Main responsibilities:
-// 1. Read UNPAID orders created by the Kiosk
-// 2. Display the unpaid order queue
-// 3. Let the Cashier select an order
-// 4. Show order details and total amount
-// 5. Accept the amount received from the customer
-// 6. Calculate change
-// 7. Validate that the payment covers the total
-// 8. Mark the order as PAID
-// 9. Move the order from unpaidOrders to paidOrders
-// 10. Make the paid order available to the Bar module
-//
-// Current prototype storage:
-// Browser localStorage is used instead of a centralized
-// database/backend.
-// ============================================================
+// Must match the integer basis-point rules in Ajax/pricing_helper.php.
+const PRICING = {
+  // TODO CONFIRM: replace the student placeholder after owner approval.
+  STUDENT_RATE_BP: 1000,
+  // TODO CONFIRM: verify VAT registration and the applicable VAT percentage.
+  VAT_REGISTERED: true,
+  VAT_PERCENT: 12,
+  PWD_SENIOR_RATE_BP: 2000,
+  OWNER_RATE_BP: 10000
+};
 
-const STORAGE_UNPAID = 'unpaidOrders';
-const STORAGE_PAID = 'paidOrders';
-const STORAGE_VOIDED = 'voidedOrders';
-const CASHIER_BRANCH_ID = 1; // 1 = Calamba, 2 = Lipa
+const CASHIER_BRANCH_ID = 1;
+const BRANCH_NAMES = { 1: 'Calamba', 2: 'Lipa' };
 
 let unpaidOrders = [];
-let paidOrders = [];
-let voidedOrders = [];
 let selectedOrder = null;
-let voidOrderId = null;
-let paymentMethod = 'Cash';
-let editOrderCopy = null;
 let queueFilter = 'all';
+let paymentBusy = false;
+let checkoutState = {
+  orderId: null,
+  category: 'Regular',
+  method: 'Cash',
+  cashReceived: '',
+  gcashRef: '',
+  gcashVerified: false
+};
+
+function escapeHtml(value) {
+  return String(value ?? '').replace(/[&<>"']/g, character => ({
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '"': '&quot;',
+    "'": '&#39;'
+  })[character]);
+}
+
+function centsFromDecimal(value) {
+  const text = String(value ?? '').trim();
+  const match = text.match(/^(-?)(\d+)(?:\.(\d{1,2}))?$/);
+  if (!match) return 0;
+  const whole = Number(match[2]);
+  const fraction = Number((match[3] || '').padEnd(2, '0'));
+  const cents = whole * 100 + fraction;
+  return match[1] === '-' ? -cents : cents;
+}
+
+function formatAmount(cents) {
+  const sign = cents < 0 ? '-' : '';
+  const absolute = Math.abs(Math.trunc(cents));
+  return `${sign}₱${Math.floor(absolute / 100)}.${String(absolute % 100).padStart(2, '0')}`;
+}
 
 function formatOrderNumber(value) {
   if (value === null || value === undefined) return '—';
   const text = String(value);
   if (text.startsWith('#')) return text;
-  const num = parseInt(text, 10);
-  return isNaN(num) ? text : '#' + String(num).padStart(2, '0');
+  const number = parseInt(text, 10);
+  return Number.isNaN(number) ? text : `#${String(number).padStart(2, '0')}`;
 }
 
 function formatTime(value) {
   const date = new Date(value);
-  return date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
-}
-
-function formatAmount(value) {
-  return `₱${Number(value || 0).toFixed(2)}`;
+  return Number.isNaN(date.getTime())
+    ? '—'
+    : date.toLocaleString([], {
+      month: 'short',
+      day: 'numeric',
+      hour: 'numeric',
+      minute: '2-digit'
+    });
 }
 
 function updateSidebarTime() {
@@ -65,9 +86,6 @@ function updateSidebarTime() {
 
 function getItemImage(name) {
   const fallback = 'Assets/Images/Logo.jpg';
-  const normalized = String(name || '').trim();
-  if (!normalized) return fallback;
-
   const mapping = {
     americano: 'Assets/Images/Americano.png',
     latte: 'Assets/Images/Latte.png',
@@ -83,179 +101,162 @@ function getItemImage(name) {
     'blueberry matcha': 'Assets/Images/Blueberry Matcha.png',
     'strawberry matcha': 'Assets/Images/Strawberry Matcha.png',
     'espresso matcha': 'Assets/Images/Espresso matcha.png',
-    'cookie': fallback,
-    'pasta': fallback
+    cookie: fallback,
+    pasta: fallback
   };
-
-  const key = normalized.toLowerCase();
-  return mapping[key] || fallback;
+  return mapping[String(name || '').trim().toLowerCase()] || fallback;
 }
 
-// ------------------------------------------------------------
-// REFRESH ORDER QUEUE
-// Reloads the latest order data from localStorage.
-// ------------------------------------------------------------
 function loadOrders() {
   loadData();
 }
 
-// ============================================================
-// LOAD CASHIER DATA
-//
-// Reads:
-// - unpaidOrders = orders waiting for payment
-// - paidOrders   = orders already confirmed as paid
-//
-// After loading, the Cashier queue and selected order details
-// are refreshed.
-// ============================================================
-
 async function loadData() {
   const list = document.getElementById('order-list');
-
   try {
     const response = await fetch(
       `Ajax/get_unpaid_orders.php?branch_id=${CASHIER_BRANCH_ID}`,
-      {
-        headers: {
-          Accept: 'application/json'
-        }
-      }
+      { headers: { Accept: 'application/json' } }
     );
-
     const data = await response.json();
 
-    if (
-      !response.ok ||
-      !data.success ||
-      !Array.isArray(data.orders)
-    ) {
-      throw new Error(
-        data.message || 'Unable to load unpaid orders.'
-      );
+    if (!response.ok || !data.success || !Array.isArray(data.orders)) {
+      throw new Error(data.message || 'Unable to load unpaid orders.');
     }
 
-    // Unpaid orders now come from MySQL.
+    const previousId = selectedOrder ? Number(selectedOrder.id) : null;
     unpaidOrders = data.orders;
-
-    // Paid and voided lists still use localStorage for now.
-    paidOrders = JSON.parse(
-      localStorage.getItem(STORAGE_PAID) || 'null'
-    ) || [];
-
-    voidedOrders = JSON.parse(
-      localStorage.getItem(STORAGE_VOIDED) || 'null'
-    ) || [];
-
-    // Remember which order was selected, if any.
-    const previousId = selectedOrder
-      ? Number(selectedOrder.id)
-      : null;
-
-    // Keep that selection only if the order is still unpaid.
     selectedOrder = previousId === null
       ? null
-      : unpaidOrders.find(
-          order =>
-            Number(order.id) === previousId &&
-            order.status === 'UNPAID'
-        ) || null;
+      : unpaidOrders.find(order =>
+        Number(order.id) === previousId && order.status === 'UNPAID'
+      ) || null;
 
+    if (!selectedOrder) resetCheckout(null);
     renderOrderList();
-
-    if (selectedOrder) {
-      renderDetails();
-    } else {
-      clearSelection();
-    }
-
-    console.log(
-      'Cashier orders loaded from MySQL:',
-      unpaidOrders.length
-    );
-
+    if (selectedOrder) renderDetails();
+    else clearSelection();
+    console.log('Cashier orders loaded from MySQL:', unpaidOrders.length);
   } catch (error) {
     console.error('Cashier order loading failed:', error);
-
     if (list) {
       list.textContent =
         'Unable to load orders from the database. Check the connection.';
     }
-
-    document.getElementById('empty-state')
-      ?.classList.add('hidden');
+    document.getElementById('empty-state')?.classList.add('hidden');
   }
 }
 
-
-// ------------------------------------------------------------
-// SAVE CASHIER DATA
-// Persists both unpaidOrders and paidOrders to localStorage.
-// ------------------------------------------------------------
-function saveData() {
-  localStorage.setItem(STORAGE_UNPAID, JSON.stringify(unpaidOrders));
-  localStorage.setItem(STORAGE_PAID, JSON.stringify(paidOrders));
+function resetCheckout(orderId) {
+  checkoutState = {
+    orderId,
+    category: 'Regular',
+    method: 'Cash',
+    cashReceived: '',
+    gcashRef: '',
+    gcashVerified: false
+  };
 }
 
-// ============================================================
-// UNPAID ORDER QUEUE
-//
-// Workflow step:
-// "Cashier selects unpaid order."
-//
-// Only orders with status UNPAID are displayed here.
-// The queue can also be filtered by Dine-in / Take-out.
-// ============================================================
+function calculateSubtotal(order) {
+  return (order.items || []).reduce((total, item) => {
+    const quantity = Number.parseInt(item.qty, 10);
+    return total + Math.max(0, quantity || 0) * centsFromDecimal(item.price);
+  }, 0);
+}
+
+function computePricing(order, category) {
+  const subtotalCents = calculateSubtotal(order);
+  let baseCents = subtotalCents;
+  let vatAdjustmentCents = 0;
+
+  if (
+    (category === 'PWD' || category === 'Senior Citizen') &&
+    PRICING.VAT_REGISTERED
+  ) {
+    const divisor = 100 + PRICING.VAT_PERCENT;
+    baseCents = Math.floor(
+      (subtotalCents * 100 + Math.floor(divisor / 2)) / divisor
+    );
+    vatAdjustmentCents = subtotalCents - baseCents;
+  }
+
+  let discountRateBp = 0;
+  if (category === 'Student') {
+    discountRateBp = PRICING.STUDENT_RATE_BP;
+  } else if (category === 'PWD' || category === 'Senior Citizen') {
+    discountRateBp = PRICING.PWD_SENIOR_RATE_BP;
+  } else if (category === 'Owner') {
+    discountRateBp = PRICING.OWNER_RATE_BP;
+  } else if (category !== 'Regular') {
+    throw new Error('Unknown customer category.');
+  }
+
+  const discountCents = discountRateBp >= 10000
+    ? baseCents
+    : Math.floor((baseCents * discountRateBp + 5000) / 10000);
+  return {
+    subtotalCents,
+    baseCents,
+    vatAdjustmentCents,
+    discountRateBp,
+    discountCents,
+    finalCents: baseCents - discountCents
+  };
+}
+
+function calculateTotal(order, category = checkoutState.category) {
+  return computePricing(order, category).finalCents;
+}
+
 function renderOrderList() {
   const list = document.getElementById('order-list');
   const emptyState = document.getElementById('empty-state');
   list.innerHTML = '';
 
-  const queue = (unpaidOrders || []).filter(order => {
-    const isUnpaid = order.status === 'UNPAID';
-    const matchesFilter = queueFilter === 'all' || order.type === queueFilter;
-    return isUnpaid && matchesFilter;
-  });
-  const allUnpaid = (unpaidOrders || []).filter(order => order.status === 'UNPAID');
+  const allUnpaid = unpaidOrders.filter(order => order.status === 'UNPAID');
+  const queue = allUnpaid.filter(order =>
+    queueFilter === 'all' || order.type === queueFilter
+  );
   document.getElementById('count-all').textContent = allUnpaid.length;
-  document.getElementById('count-dine-in').textContent = allUnpaid.filter(order => order.type === 'Dine-in').length;
-  document.getElementById('count-take-out').textContent = allUnpaid.filter(order => order.type === 'Take-out').length;
+  document.getElementById('count-dine-in').textContent =
+    allUnpaid.filter(order => order.type === 'Dine-in').length;
+  document.getElementById('count-take-out').textContent =
+    allUnpaid.filter(order => order.type === 'Take-out').length;
   queue.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
   if (!queue.length) {
     emptyState.classList.remove('hidden');
     return;
   }
-
   emptyState.classList.add('hidden');
 
   queue.forEach(order => {
     const card = document.createElement('button');
     card.type = 'button';
-    const isSelected = selectedOrder && selectedOrder.id === order.id;
-    card.className = `order-card ${isSelected ? 'selected' : ''}`;
-
-    const itemSummary = order.items && order.items.length
-      ? order.items.map(item => `${item.qty}× ${item.name}`).join(', ')
+    card.className =
+      `order-card ${selectedOrder && Number(selectedOrder.id) === Number(order.id) ? 'selected' : ''}`;
+    const itemSummary = order.items?.length
+      ? order.items.map(item =>
+        `${Number(item.qty)}× ${escapeHtml(item.name)}`
+      ).join(', ')
       : 'No items';
-
-    const total = calculateTotal(order);
+    const subtotal = calculateSubtotal(order);
 
     card.innerHTML = `
       <div class="order-card-main">
         <div class="order-card-meta">
-          <div class="order-code">Order ${formatOrderNumber(order.number || order.id)}</div>
-          <div class="order-type">${order.type}</div>
+          <div class="order-code">Order ${escapeHtml(formatOrderNumber(order.number || order.id))}</div>
+          <div class="order-type">${escapeHtml(order.type)}</div>
           <div class="order-summary">${itemSummary}</div>
         </div>
         <div class="order-card-side">
-          <div class="order-time">${formatTime(order.timestamp)}</div>
-          <div class="order-total">₱${total.toFixed(2)}</div>
+          <div class="order-time">${escapeHtml(formatTime(order.timestamp))}</div>
+          <div class="order-total">${formatAmount(subtotal)}</div>
         </div>
       </div>
     `;
-
-    card.onclick = () => selectOrder(order.id);
+    card.addEventListener('click', () => selectOrder(order.id));
     list.appendChild(card);
   });
 }
@@ -268,366 +269,393 @@ function setQueueFilter(filter) {
   renderOrderList();
 }
 
-// ------------------------------------------------------------
-// SELECT ORDER
-// Finds the chosen UNPAID order and displays its details
-// in the Cashier processing panel.
-// ------------------------------------------------------------
 function selectOrder(orderId) {
-  selectedOrder = unpaidOrders.find(order => order.id === orderId && order.status === 'UNPAID');
+  selectedOrder = unpaidOrders.find(order =>
+    Number(order.id) === Number(orderId) && order.status === 'UNPAID'
+  );
   if (!selectedOrder) return;
+  if (Number(checkoutState.orderId) !== Number(selectedOrder.id)) {
+    resetCheckout(Number(selectedOrder.id));
+  }
   renderOrderList();
   renderDetails();
 }
 
-// ============================================================
-// DISPLAY SELECTED ORDER DETAILS
-//
-// Shows:
-// - Order number
-// - Dine-in / Take-out type
-// - PENDING PAYMENT status
-// - Items and customizations
-// - Quantity and subtotal
-// - Final order total
-//
-// This lets the Cashier verify the order before payment.
-// ============================================================
 function renderDetails() {
   if (!selectedOrder) return;
   document.getElementById('detail-panel').classList.remove('hidden');
   document.getElementById('detail-empty').classList.add('hidden');
-
-  const orderNumberText = `Order ${formatOrderNumber(selectedOrder.number || selectedOrder.id)}`;
-  document.getElementById('detail-order-number').textContent = orderNumberText;
+  document.getElementById('detail-order-number').textContent =
+    `Order ${formatOrderNumber(selectedOrder.number || selectedOrder.id)}`;
   document.getElementById('detail-order-type').textContent = selectedOrder.type;
   document.getElementById('detail-status').textContent = 'PENDING PAYMENT';
 
   const detailItems = document.getElementById('detail-items');
-  detailItems.innerHTML = selectedOrder.items.map(item => {
-    const itemPrice = Number(item.price || 0).toFixed(2);
-    const itemSubtotal = (item.qty * item.price).toFixed(2);
-    const itemDetails = [item.size, item.temp, item.sugar && `${item.sugar} Sugar`].filter(value => value && value !== '-').join(' · ');
+  detailItems.innerHTML = (selectedOrder.items || []).map(item => {
+    const quantity = Number.parseInt(item.qty, 10) || 0;
+    const unitPriceCents = centsFromDecimal(item.price);
+    const details = [
+      item.size,
+      item.temp,
+      item.sugar ? `${item.sugar} Sugar` : ''
+    ].filter(value => value && value !== '-').join(' · ');
     const imageSrc = getItemImage(item.name);
-
     return `
       <div class="item-row">
         <div class="item-main">
-          <img class="item-thumb" src="${imageSrc}" alt="${item.name}" onerror="this.src='Assets/Images/Logo.jpg'" />
+          <img class="item-thumb" src="${escapeHtml(imageSrc)}" alt="${escapeHtml(item.name)}" onerror="this.src='Assets/Images/Logo.jpg'" />
           <div class="item-copy">
-            <div class="item-name">${item.name}</div>
-            <div class="item-meta">${itemDetails || 'Standard'}</div>
+            <div class="item-name">${escapeHtml(item.name)}</div>
+            <div class="item-meta">${escapeHtml(details || 'Standard')}</div>
           </div>
         </div>
-        <div class="item-qty">${item.qty}</div>
-        <div class="item-price">₱${itemPrice}</div>
-        <div class="item-subtotal">₱${itemSubtotal}</div>
+        <div class="item-qty">${quantity}</div>
+        <div class="item-price">${formatAmount(unitPriceCents)}</div>
+        <div class="item-subtotal">${formatAmount(unitPriceCents * quantity)}</div>
       </div>
     `;
   }).join('');
 
-  const total = calculateTotal(selectedOrder);
-  document.getElementById('detail-subtotal').textContent = formatAmount(total);
-  document.getElementById('detail-subtotal-copy').textContent = formatAmount(total);
-  document.getElementById('detail-total-copy').textContent = formatAmount(total);
-  document.getElementById('detail-item-count').textContent = selectedOrder.items.reduce((sum, item) => sum + item.qty, 0);
-  document.getElementById('cash-received').value = selectedOrder.paidAmount || '';
+  document.getElementById('cash-received').value = checkoutState.cashReceived;
+  document.getElementById('gcash-reference').value = checkoutState.gcashRef;
+  document.getElementById('gcash-verified').checked = checkoutState.gcashVerified;
+  updateCategoryButtons();
   updatePaymentButtons();
 }
 
-// ------------------------------------------------------------
-// ORDER TOTAL CALCULATION
-// Adds each item's quantity × price to get the final total.
-// ------------------------------------------------------------
-function calculateTotal(order) {
-  return (order.items || []).reduce((sum, item) => sum + item.qty * item.price, 0);
-}
-
-// ------------------------------------------------------------
-// EDIT ORDER BEFORE PAYMENT
-// Creates a temporary copy so the Cashier can adjust items
-// before saving changes to the selected unpaid order.
-// ------------------------------------------------------------
-function openEditModal() {
-  if (!selectedOrder) return;
-  editOrderCopy = JSON.parse(JSON.stringify(selectedOrder));
-  renderModalItems();
-  document.getElementById('edit-modal').classList.remove('hidden');
-}
-
-function closeEditModal() {
-  document.getElementById('edit-modal').classList.add('hidden');
-  editOrderCopy = null;
-}
-
-function renderModalItems() {
-  const container = document.getElementById('modal-items');
-  container.innerHTML = '';
-
-  if (!editOrderCopy || !editOrderCopy.items || !editOrderCopy.items.length) {
-    container.innerHTML = '<div class="empty-state"><p class="empty-title">No items</p><p class="empty-sub">Add an item to continue.</p></div>';
-    return;
-  }
-
-  editOrderCopy.items.forEach((item, index) => {
-    const card = document.createElement('div');
-    card.className = 'modal-item';
-    card.innerHTML = `
-      <div class="modal-item-head">
-        <div class="modal-item-copy">
-          <div class="modal-item-name">${item.name}</div>
-          <div class="modal-item-meta">${[item.size, item.temp, item.sugar].filter(value => value && value !== '-').join(' · ') || 'Standard'}</div>
-        </div>
-        <div class="modal-item-actions">
-          <div class="qty-box">
-            <button type="button" class="qty-btn" onclick="updateModalQty(${index}, -1)">-</button>
-            <span class="qty-value">${item.qty}</span>
-            <button type="button" class="qty-btn" onclick="updateModalQty(${index}, 1)">+</button>
-          </div>
-          <button type="button" class="remove-item-btn" onclick="removeModalItem(${index})">Remove</button>
-        </div>
-      </div>
-    `;
-    container.appendChild(card);
+function updateCategoryButtons() {
+  document.querySelectorAll('.category-option').forEach(button => {
+    const selected = button.dataset.category === checkoutState.category;
+    button.classList.toggle('active', selected);
+    button.setAttribute('aria-checked', String(selected));
   });
 }
 
-function updateModalQty(itemIndex, delta) {
-  const item = editOrderCopy.items[itemIndex];
-  if (!item) return;
-  item.qty = Math.max(1, item.qty + delta);
-  renderModalItems();
-}
-
-function removeModalItem(itemIndex) {
-  if (!editOrderCopy || !editOrderCopy.items) return;
-  editOrderCopy.items.splice(itemIndex, 1);
-  renderModalItems();
-}
-
-function addModalItem() {
-  if (!editOrderCopy) return;
-  const type = document.getElementById('new-item-type').value;
-  const itemTemplates = {
-    Americano: { name: 'Americano', size: 'Medium', temp: 'Hot', sugar: '25%', price: 120 },
-    Latte: { name: 'Latte', size: 'Large', temp: 'Iced', sugar: '50%', price: 150 },
-    Espresso: { name: 'Espresso', size: 'Small', temp: 'Hot', sugar: '0%', price: 90 },
-    Cookie: { name: 'Cookie', size: '-', temp: '-', sugar: '-', price: 55 },
-    Pasta: { name: 'Pasta', size: '-', temp: '-', sugar: '-', price: 185 }
-  };
-
-  const template = itemTemplates[type];
-  if (!template) return;
-
-  editOrderCopy.items.push({ id: `m${Date.now()}`, qty: 1, ...template });
-  renderModalItems();
-}
-
-// ------------------------------------------------------------
-// SAVE EDITED ORDER
-// Replaces the selected order's items with the edited copy,
-// recalculates the total, then saves the updated data.
-// ------------------------------------------------------------
-function saveOrderChanges() {
-  if (!selectedOrder || !editOrderCopy) return;
-  selectedOrder.items = editOrderCopy.items;
-  selectedOrder.total = calculateTotal(selectedOrder);
-  saveData();
-  renderDetails();
-  renderOrderList();
-  closeEditModal();
-}
-
-// ------------------------------------------------------------
-// PAYMENT METHOD DISPLAY
-// The current prototype supports Cash payment for this workflow.
-// ------------------------------------------------------------
-function updatePaymentButtons() {
-  const cashBtn = document.getElementById('payment-cash');
-  const cashFields = document.getElementById('cash-fields');
-  if (cashBtn) cashBtn.classList.add('active');
-  if (cashFields) cashFields.classList.remove('hidden');
-  updateCashChange();
-}
-
-// ============================================================
-// CHANGE CALCULATION
-//
-// Workflow step:
-// "System calculates change."
-//
-// Formula:
-// amount received - order total
-//
-// The displayed change is never allowed to go below zero.
-// ============================================================
-function updateCashChange() {
-  if (!selectedOrder) return;
-  const total = calculateTotal(selectedOrder);
-  const input = document.getElementById('cash-received');
-  const received = Math.max(0, Number(input.value || 0));
-  const change = Math.max(0, received - total);
-  document.getElementById('cash-change').textContent = formatAmount(change);
-}
-
-// ============================================================
-// MARK AS PAID - CASHIER → BAR HANDOFF
-//
-// Workflow steps:
-// 1. Cashier enters amount received
-// 2. System validates that payment covers the total
-// 3. Cashier selects "Mark as Paid"
-// 4. System updates status to PAID
-// 5. Order is moved to paidOrders
-// 6. Order becomes available to the Bar module
-//
-// IMPORTANT:
-// The Cashier manually receives the physical cash.
-// The system only validates the entered amount and records
-// the payment result; there is no online payment gateway.
-// ============================================================
-
-async function markAsPaid() {
-  if (!selectedOrder) {
-    alert('Please select an order first.');
+function selectCategory(category) {
+  if (!['Regular', 'Student', 'PWD', 'Senior Citizen', 'Owner'].includes(category)) {
     return;
   }
+  checkoutState.category = category;
+  updateCategoryButtons();
+  updatePaymentButtons();
+}
 
+function selectPaymentMethod(method) {
+  if (method !== 'Cash' && method !== 'GCash') return;
+  checkoutState.method = method;
+  updatePaymentButtons();
+}
+
+function currentPricing() {
+  return selectedOrder
+    ? computePricing(selectedOrder, checkoutState.category)
+    : {
+      subtotalCents: 0,
+      vatAdjustmentCents: 0,
+      discountRateBp: 0,
+      discountCents: 0,
+      finalCents: 0
+    };
+}
+
+function updatePaymentButtons() {
+  const pricing = currentPricing();
+  const zeroPayment = pricing.finalCents === 0;
+  const cashSelected = checkoutState.method === 'Cash';
+
+  document.querySelector('.payment-method-options')
+    .classList.toggle('hidden', zeroPayment);
+  document.getElementById('payment-cash').classList.toggle('active', cashSelected);
+  document.getElementById('payment-cash').setAttribute('aria-pressed', String(cashSelected));
+  document.getElementById('payment-gcash').classList.toggle('active', !cashSelected);
+  document.getElementById('payment-gcash').setAttribute('aria-pressed', String(!cashSelected));
+  document.getElementById('cash-fields').classList.toggle('hidden', zeroPayment || !cashSelected);
+  document.getElementById('gcash-fields').classList.toggle('hidden', zeroPayment || cashSelected);
+  document.getElementById('zero-payment-block').classList.toggle('hidden', !zeroPayment);
+
+  document.getElementById('summary-subtotal').textContent =
+    formatAmount(pricing.subtotalCents);
+  const vatRow = document.getElementById('summary-vat-row');
+  vatRow.classList.toggle('hidden', pricing.vatAdjustmentCents === 0);
+  document.getElementById('summary-vat').textContent =
+    formatAmount(pricing.vatAdjustmentCents);
+  const discountRow = document.getElementById('summary-discount-row');
+  discountRow.classList.toggle('hidden', pricing.discountCents === 0);
+  document.getElementById('summary-discount-label').textContent =
+    `Less Discount (${(pricing.discountRateBp / 100).toFixed(2)}%)`;
+  document.getElementById('summary-discount').textContent =
+    formatAmount(pricing.discountCents);
+  document.getElementById('summary-total-payable').textContent =
+    formatAmount(pricing.finalCents);
+  document.getElementById('gcash-verification-copy').textContent =
+    `I checked the GCash merchant account and the payment of ${formatAmount(pricing.finalCents)} was received.`;
+
+  updateCashChange();
+  updatePaymentReadiness();
+}
+
+function amountInputToCents(value) {
+  const text = String(value).trim();
+  if (!/^\d+(?:\.\d{1,2})?$/.test(text)) return null;
+  const cents = centsFromDecimal(value);
+  return cents < 0 ? null : cents;
+}
+
+function updateCashChange() {
+  const pricing = currentPricing();
+  const input = document.getElementById('cash-received');
+  const entered = amountInputToCents(input.value);
+  checkoutState.cashReceived = input.value;
+  const change = entered === null
+    ? 0
+    : Math.max(0, entered - pricing.finalCents);
+  document.getElementById('cash-change').textContent = formatAmount(change);
+
+  const shortfall = document.getElementById('cash-shortfall');
+  if (entered !== null && entered < pricing.finalCents) {
+    shortfall.textContent =
+      `Short by ${formatAmount(pricing.finalCents - entered)}`;
+    shortfall.classList.remove('hidden');
+  } else {
+    shortfall.textContent = '';
+    shortfall.classList.add('hidden');
+  }
+  updatePaymentReadiness();
+}
+
+function updatePaymentReadiness() {
+  const button = document.getElementById('mark-paid');
+  if (!button) return;
+  const pricing = currentPricing();
+  const zeroPaymentReady =
+    pricing.finalCents === 0 && checkoutState.category === 'Owner';
+  const cashReceived = amountInputToCents(
+    document.getElementById('cash-received')?.value || ''
+  );
+  const gcashReference = checkoutState.gcashRef.replace(/\s+/g, '');
+  const gcashReady =
+    /^[A-Za-z0-9]{8,20}$/.test(gcashReference) &&
+    checkoutState.gcashVerified;
+  const cashReady =
+    cashReceived !== null && cashReceived >= pricing.finalCents;
+  const methodReady = pricing.finalCents === 0
+    ? zeroPaymentReady
+    : checkoutState.method === 'Cash' ? cashReady : gcashReady;
+
+  button.disabled = paymentBusy || !selectedOrder || !methodReady;
+}
+
+function handleGcashReferenceChange(event) {
+  checkoutState.gcashRef = event.target.value;
+  updatePaymentReadiness();
+}
+
+function handleGcashVerificationChange(event) {
+  checkoutState.gcashVerified = event.target.checked;
+  updatePaymentReadiness();
+}
+
+async function markAsPaid() {
+  if (paymentBusy || !selectedOrder) return;
   const orderBeingPaid = selectedOrder;
-  const total = calculateTotal(orderBeingPaid);
-  const cashInput = document.getElementById('cash-received');
-  const received = Number(cashInput?.value || 0);
+  const pricing = computePricing(orderBeingPaid, checkoutState.category);
 
-  // Prevent payment for empty test orders.
-  if (!orderBeingPaid.items || orderBeingPaid.items.length === 0 || total <= 0) {
+  if (!orderBeingPaid.items?.length || pricing.subtotalCents <= 0) {
     alert('Cannot accept payment for an order with no items.');
     return;
   }
 
-  if (!Number.isFinite(received) || received < total) {
-    alert('Amount received must cover the total before marking paid.');
-    return;
-  }
-
+  updatePaymentReadiness();
   const button = document.getElementById('mark-paid');
-  const originalText = button ? button.textContent : '';
+  if (button.disabled) return;
 
-  if (button) {
-    if (button.disabled) return;
-    button.disabled = true;
-    button.textContent = 'Saving payment...';
-  }
+  const amountReceivedCents = pricing.finalCents === 0
+    ? 0
+    : checkoutState.method === 'Cash'
+      ? amountInputToCents(checkoutState.cashReceived)
+      : pricing.finalCents;
+  const paymentMethod = pricing.finalCents === 0
+    ? 'None'
+    : checkoutState.method;
+  const payload = {
+    order_id: Number(orderBeingPaid.id),
+    branch_id: CASHIER_BRANCH_ID,
+    customer_category: checkoutState.category,
+    payment_method: paymentMethod,
+    amount_received: amountReceivedCents,
+    gcash_reference: checkoutState.method === 'GCash'
+      ? checkoutState.gcashRef.replace(/\s+/g, '')
+      : null,
+    payment_verified:
+      checkoutState.method === 'GCash' && checkoutState.gcashVerified,
+    expected_final_amount: pricing.finalCents
+  };
+
+  paymentBusy = true;
+  button.disabled = true;
+  const originalText = button.textContent;
+  button.textContent = 'Saving payment...';
 
   try {
     const response = await fetch('Ajax/mark_paid.php', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Accept': 'application/json'
+        Accept: 'application/json'
       },
-      body: JSON.stringify({
-        order_id: Number(orderBeingPaid.id),
-        branch_id: CASHIER_BRANCH_ID,
-        amount_received: received
-      })
+      body: JSON.stringify(payload)
     });
-
     const data = await response.json().catch(() => null);
-
-    if (!response.ok || !data || !data.success) {
-      throw new Error(
-        data?.message || 'Unable to record payment.'
-      );
+    if (!response.ok || !data?.success) {
+      throw new Error(data?.message || 'Unable to record payment.');
     }
 
-    // Update the browser-side paid list only after PHP succeeds.
     const paidOrder = {
       ...orderBeingPaid,
-      number: data.order_number || orderBeingPaid.number,
-      status: data.order_status || 'PAID',
-      payment: data.payment_method || 'Cash',
-      paidAmount: Number(data.amount_paid),
-      change: Number(data.change_amount),
-      total: Number(data.total_amount),
-      paidAt: new Date().toISOString()
+      number: data.order_number,
+      status: data.order_status,
+      payment: data.payment_method,
+      paidAmount: data.amount_paid,
+      change: data.change_amount,
+      total: data.total_amount,
+      paidAt: data.paid_at,
+      branch_id: CASHIER_BRANCH_ID
     };
-
-    // Avoid adding the same order twice.
-    paidOrders = (paidOrders || []).filter(
-      order => Number(order.id) !== Number(paidOrder.id)
-    );
-    paidOrders.push(paidOrder);
-
-    // Remove it from the local unpaid queue.
-    unpaidOrders = (unpaidOrders || []).filter(
+    unpaidOrders = unpaidOrders.filter(
       order => Number(order.id) !== Number(paidOrder.id)
     );
 
-    // Keep the existing Bar workflow compatible for now.
-    saveData();
+    // This single localStorage write only nudges an open Bar tab to reload from MySQL.
+    try {
+      localStorage.setItem('paidOrders', JSON.stringify([paidOrder]));
+    } catch (storageError) {
+      console.warn('Unable to notify the open Bar tab to refresh:', storageError);
+    }
 
+    showReceipt(data);
     selectedOrder = null;
+    resetCheckout(null);
     renderOrderList();
     clearSelection();
-
     showSuccess(
-      `Order ${formatOrderNumber(paidOrder.number || paidOrder.id)} marked as paid.`
+      `Order ${formatOrderNumber(data.order_number)} marked as paid.`
     );
-
-    console.log('Payment saved to MySQL:', data);
-
   } catch (error) {
     console.error('Payment submission failed:', error);
-
-    alert(
-      error.message ||
-      'Unable to record payment. Please try again.'
-    );
-
+    alert(error.message || 'Unable to record payment. Please try again.');
   } finally {
-    if (button) {
-      button.disabled = false;
-      button.textContent = originalText;
-    }
+    paymentBusy = false;
+    button.textContent = originalText;
+    updatePaymentReadiness();
   }
 }
 
-// ------------------------------------------------------------
-// CLEAR SELECTED ORDER
-// Resets the details panel after an order is completed or
-// no longer exists in the unpaid queue.
-// ------------------------------------------------------------
+function showReceipt(receipt) {
+  if (!receipt || receipt.order_status !== 'PAID') return;
+  const items = Array.isArray(receipt.items) ? receipt.items : [];
+  const rows = items.map(item => {
+    const unitPriceCents = centsFromDecimal(item.unit_price);
+    const lineTotalCents = centsFromDecimal(item.line_total);
+    const itemDetails = [
+      item.size,
+      item.temperature,
+      item.sugar_percent ? `${item.sugar_percent} Sugar` : ''
+    ].filter(value => value && value !== '-').join(' · ');
+    return `<tr>
+      <td>${escapeHtml(item.name)}${itemDetails ? `<small>${escapeHtml(itemDetails)}</small>` : ''}</td>
+      <td>${Number(item.quantity)} × ${formatAmount(unitPriceCents)}</td>
+      <td>${formatAmount(lineTotalCents)}</td>
+    </tr>`;
+  }).join('');
+
+  const method = receipt.payment_method;
+  const date = new Date(receipt.paid_at);
+  const dateText = Number.isNaN(date.getTime()) ? receipt.paid_at : date.toLocaleString();
+  const gcashLine = method === 'GCash'
+    ? `<div><span>GCash Reference</span><strong>${escapeHtml(receipt.gcash_reference)}</strong></div>`
+    : '';
+  const cashLines = method === 'Cash'
+    ? `<div><span>Amount received</span><strong>${formatAmount(centsFromDecimal(receipt.amount_paid))}</strong></div>
+       <div><span>Change</span><strong>${formatAmount(centsFromDecimal(receipt.change_amount))}</strong></div>`
+    : '';
+
+  document.getElementById('receipt-content').innerHTML = `
+    <header class="receipt-header">
+      <h2 id="receipt-title">Psalm 23:5 Coffee</h2>
+      <p>${escapeHtml(receipt.branch_name)} Branch · ${escapeHtml(receipt.order_type)}</p>
+      <p>Order ${escapeHtml(receipt.order_number)}</p>
+      <p>${escapeHtml(dateText)}</p>
+      <p>Customer category: ${escapeHtml(receipt.customer_category)}</p>
+    </header>
+    <table class="receipt-items">
+      <thead><tr><th>Product</th><th>Qty × Price</th><th>Line total</th></tr></thead>
+      <tbody>${rows}</tbody>
+    </table>
+    <div class="receipt-summary">
+      <div><span>Subtotal</span><strong>${formatAmount(centsFromDecimal(receipt.subtotal_amount))}</strong></div>
+      <div><span>Less VAT</span><strong>${formatAmount(centsFromDecimal(receipt.vat_adjustment_amount))}</strong></div>
+      <div><span>Less Discount (${(Number(receipt.discount_rate) * 100).toFixed(2)}%)</span><strong>−${formatAmount(centsFromDecimal(receipt.discount_amount))}</strong></div>
+      <div class="receipt-total"><span>Total payable</span><strong>${formatAmount(centsFromDecimal(receipt.total_amount))}</strong></div>
+      <div><span>Payment method</span><strong>${escapeHtml(method)}</strong></div>
+      ${gcashLine}
+      ${cashLines}
+    </div>
+    <p class="receipt-thanks">Thank you for visiting Psalm 23:5 Coffee.</p>
+  `;
+  document.getElementById('receipt-modal').classList.remove('hidden');
+}
+
+function closeReceipt() {
+  document.getElementById('receipt-modal').classList.add('hidden');
+}
+
+function printReceipt() {
+  document.body.classList.add('printing-receipt');
+  window.addEventListener(
+    'afterprint',
+    () => document.body.classList.remove('printing-receipt'),
+    { once: true }
+  );
+  window.print();
+}
+
 function clearSelection() {
   selectedOrder = null;
   document.getElementById('detail-panel').classList.add('hidden');
   document.getElementById('detail-empty').classList.remove('hidden');
+  updatePaymentReadiness();
   renderOrderList();
 }
 
-// ------------------------------------------------------------
-// PAYMENT SUCCESS MESSAGE
-// Shows temporary confirmation after an order is marked PAID.
-// ------------------------------------------------------------
 function showSuccess(message) {
   const toast = document.getElementById('success-toast');
-  const text = document.getElementById('success-text');
-  text.textContent = message;
+  document.getElementById('success-text').textContent = message;
   toast.classList.remove('hidden');
   setTimeout(() => toast.classList.add('hidden'), 2600);
 }
 
-// ============================================================
-// CASHIER INITIALIZATION
-// Runs when the page finishes loading:
-// - create icons
-// - load stored orders
-// - update Cashier clock
-// - prepare payment controls
-// ============================================================
 window.addEventListener('DOMContentLoaded', () => {
-  if (window.lucide) {
-    window.lucide.createIcons();
-  }
+  if (window.lucide) window.lucide.createIcons();
+  document.getElementById('sidebar-branch-name').textContent =
+    `${BRANCH_NAMES[CASHIER_BRANCH_ID] || 'Unknown'} Branch`;
+  document.getElementById('payment-cash')
+    .addEventListener('click', () => selectPaymentMethod('Cash'));
+  document.getElementById('payment-gcash')
+    .addEventListener('click', () => selectPaymentMethod('GCash'));
+  document.querySelectorAll('.category-option').forEach(button => {
+    button.addEventListener('click', () => selectCategory(button.dataset.category));
+  });
+  document.getElementById('gcash-reference')
+    .addEventListener('input', handleGcashReferenceChange);
+  document.getElementById('gcash-verified')
+    .addEventListener('change', handleGcashVerificationChange);
+
+  ['openVoidModal', 'closeVoidModal', 'confirmVoidOrder'].forEach(name => {
+    if (typeof window[name] !== 'function') {
+      console.warn(`${name} is not implemented; Void Order is unavailable.`);
+    }
+  });
+
   loadData();
   updateSidebarTime();
   setInterval(updateSidebarTime, 60000);
