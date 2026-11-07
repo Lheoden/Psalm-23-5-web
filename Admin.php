@@ -1,3 +1,10 @@
+<?php
+
+require_once __DIR__ . '/Auth/auth.php';
+
+requireRole(['Admin']);
+
+?>
 <!doctype html>
 <html lang="en" class="h-full">
 <head>
@@ -99,36 +106,52 @@
 
     <main class="admin-main">
       <header class="dashboard-header">
-        <div>
-          <h1>Admin Dashboard</h1>
-          <p>Here’s what’s happening across your branches.</p>
-        </div>
 
-        <div class="header-actions">
-          <div class="date-box">
+    <div>
+        <h1>Admin Dashboard</h1>
+        <p>Here’s what’s happening across your branches.</p>
+    </div>
+
+    <div class="header-actions">
+
+        <div class="date-box">
             <i data-lucide="calendar-days"></i>
             <span id="admin-date">Today</span>
-          </div>
+        </div>
 
-          <div class="branch-control">
+        <div class="branch-control">
             <i data-lucide="map-pin"></i>
             <select id="branch-select" onchange="changeBranch(this.value)">
-              <option value="calamba">Calamba</option>
-              <option value="lipa">Lipa</option>
+                <option value="calamba">Calamba</option>
+                <option value="lipa">Lipa</option>
             </select>
             <i data-lucide="chevron-down" class="select-chevron"></i>
-          </div>
+        </div>
 
-          <div class="admin-profile">
+        <div class="admin-profile">
             <div class="avatar">A</div>
             <div class="profile-copy">
-              <strong>Admin</strong>
-              <span>Administrator</span>
+                <strong>Admin</strong>
+                <span>Administrator</span>
             </div>
             <i data-lucide="chevron-down"></i>
-          </div>
         </div>
-      </header>
+
+        <form class="logout-form" action="Auth/Logout.php" method="POST">  
+            <input
+                type="hidden"
+                name="csrf_token"
+                value="<?= htmlspecialchars(getLogoutCsrfToken(), ENT_QUOTES, 'UTF-8') ?>"
+            >
+
+            <button type="submit" class="logout-btn">
+                <i data-lucide="log-out"></i>
+                <span>Logout</span>
+            </button>
+        </form>
+
+    </div>
+</header>
 
       <section class="content-area">
         <!-- ===================================================
