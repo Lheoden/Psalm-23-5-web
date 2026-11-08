@@ -19,7 +19,9 @@ function getDashboardPath(string $role): ?string
         default:
             return null;
     }
+
 }
+
 
 if (isLoggedIn()) {
     $dashboard = getDashboardPath(
