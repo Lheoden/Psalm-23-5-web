@@ -73,19 +73,10 @@
      </div>
     </div>
 
-    <!-- Cashier navigation -->
-    <nav class="sidebar-nav" aria-label="Main navigation">
-     <button type="button" class="nav-item active">
-      <span class="nav-icon"><i data-lucide="layout-grid" class="w-4 h-4"></i></span>
-      <span>Dashboard</span>
-     </button>
-    </nav>
-
     <!-- Branch and current time -->
     <div class="sidebar-footer">
-     <div class="sidebar-info-row"><i data-lucide="map-pin" class="w-4 h-4"></i><span>Calamba Branch</span></div>
+     <div class="sidebar-info-row"><i data-lucide="map-pin" class="w-4 h-4"></i><span id="sidebar-branch-name">Calamba Branch</span></div>
      <div class="sidebar-info-row"><i data-lucide="clock-3" class="w-4 h-4"></i><span id="sidebar-time">--</span></div>
-     <p class="sidebar-quote">“Good coffee,<br>greater days.”</p>
     </div>
    </aside>
 
@@ -107,25 +98,6 @@
       <span>– 1 Corinthians 14:40</span>
      </div>
 
-     <!-- Current branch and account information -->
-     <div class="topbar-actions">
-      <div class="branch-select" aria-label="Current branch">
-       <i data-lucide="map-pin" class="w-4 h-4"></i>
-       <span>Calamba Branch</span>
-      </div>
-
-      <div class="account-pill">
-       <div class="avatar-badge">C</div>
-       <div class="account-text">
-        <strong>Cashier</strong>
-        <span>Cashier</span>
-       </div>
-      </div>
-
-      <button type="button" class="logout-btn" aria-label="Logout">
-       <i data-lucide="log-out" class="w-4 h-4"></i>
-      </button>
-     </div>
     </header>
 
 
@@ -210,12 +182,6 @@
        <!-- Order review before accepting payment -->
        <div class="detail-intro">
         <span>Verify the order details and proceed with payment.</span>
-
-        <!-- Optional order editing before payment confirmation -->
-        <button type="button" class="edit-btn" onclick="openEditModal()">
-         <i data-lucide="pencil" class="w-4 h-4"></i>
-         Edit Order
-        </button>
        </div>
 
 
@@ -231,7 +197,6 @@
        <div class="items-table">
         <div class="items-table-head">
          <span>ITEM</span>
-         <span>DETAILS</span>
          <span>QTY</span>
          <span>PRICE</span>
          <span>SUBTOTAL</span>
@@ -242,55 +207,47 @@
        </div>
 
 
-       <!-- =====================================================
-            3. CASH PAYMENT PROCESS
-            The Cashier receives physical cash from the customer,
-            then enters the amount received into the system.
-
-            NOTE:
-            The system does NOT automatically verify physical cash.
-            The Cashier manually confirms the payment.
-            ===================================================== -->
        <div class="payment-grid">
 
-        <!-- Order total calculated from the Kiosk order -->
         <div class="mini-card subtotal-card">
-         <p>TOTAL AMOUNT</p>
-         <strong id="detail-subtotal">₱0.00</strong>
-
-         <div class="summary-line">
-          <span>Items</span>
-          <span id="detail-item-count">0</span>
-         </div>
-
+         <p>ORDER SUMMARY</p>
          <div class="summary-line">
           <span>Subtotal</span>
-          <span id="detail-subtotal-copy">₱0.00</span>
+          <strong id="summary-subtotal">₱0.00</strong>
          </div>
-
+         <div id="summary-vat-row" class="summary-line hidden">
+          <span>Less VAT</span>
+          <strong id="summary-vat">₱0.00</strong>
+         </div>
+         <div id="summary-discount-row" class="summary-line hidden">
+          <span id="summary-discount-label">Less Discount</span>
+          <strong id="summary-discount">₱0.00</strong>
+         </div>
          <div class="summary-total">
-          <span>Total</span>
-          <strong id="detail-total-copy">₱0.00</strong>
+          <span>Total payable</span>
+          <strong id="summary-total-payable">₱0.00</strong>
          </div>
         </div>
 
-
-        <!-- Cash is the supported payment method in the current prototype -->
         <div class="mini-card payment-card">
          <p>PAYMENT</p>
+         <h3>Customer Category</h3>
+         <div id="customer-categories" class="category-options" role="radiogroup" aria-label="Customer category">
+          <button type="button" class="category-option active" data-category="Regular" role="radio" aria-checked="true">Regular</button>
+          <button type="button" class="category-option" data-category="Student" role="radio" aria-checked="false">Student</button>
+          <button type="button" class="category-option" data-category="PWD" role="radio" aria-checked="false">PWD</button>
+          <button type="button" class="category-option" data-category="Senior Citizen" role="radio" aria-checked="false">Senior Citizen</button>
+          <button type="button" class="category-option" data-category="Owner" role="radio" aria-checked="false">Owner</button>
+         </div>
+         <p id="pricing-pending-note" class="pricing-pending-note hidden">Regular orders keep current listed totals. Student/PWD/Senior discounts await approved rates and VAT treatment; Owner transactions require server-side authorization.</p>
 
-         <button id="payment-cash" type="button" class="payment-option active">
-          Cash
-         </button>
+         <div class="payment-method-options" role="group" aria-label="Payment method">
+          <button id="payment-cash" type="button" class="payment-option active" aria-pressed="true">Cash</button>
+          <button id="payment-gcash" type="button" class="payment-option" aria-pressed="false">GCash</button>
+         </div>
 
          <div id="cash-fields" class="cash-fields">
-
-          <!--
-               WORKFLOW STEP:
-               Cashier enters amount received.
-          -->
           <label for="cash-received">Amount Received</label>
-
           <input
            id="cash-received"
            type="number"
@@ -300,17 +257,28 @@
            oninput="updateCashChange()"
            placeholder="₱0.00"
           />
-
-          <!--
-               WORKFLOW STEP:
-               updateCashChange() calculates the customer's change
-               based on the amount entered and the order total.
-          -->
           <div class="cash-meta">
            <span>Change</span>
            <strong id="cash-change">₱0.00</strong>
           </div>
+          <p id="cash-shortfall" class="cash-shortfall hidden" role="status"></p>
+         </div>
 
+         <div id="gcash-fields" class="gcash-fields hidden">
+          <div class="gcash-qr-wrap">
+           <img id="gcash-qr" src="Assets/Images/GCash_QR.png" alt="Merchant GCash QR code" onerror="this.hidden=true; document.getElementById('gcash-qr-fallback').classList.remove('hidden')" />
+           <p id="gcash-qr-fallback" class="gcash-qr-fallback hidden">Merchant GCash QR is not available. Confirm the payment using the merchant account instructions.</p>
+          </div>
+          <label for="gcash-reference">GCash Reference Number</label>
+          <input id="gcash-reference" type="text" maxlength="20" autocomplete="off" />
+          <label class="gcash-verification">
+           <input id="gcash-verified" type="checkbox" />
+           <span id="gcash-verification-copy">I checked the GCash merchant account and the payment of ₱0.00 was received.</span>
+          </label>
+         </div>
+
+         <div id="zero-payment-block" class="zero-payment-block hidden">
+          No payment is due for this category.
          </div>
         </div>
        </div>
@@ -362,66 +330,18 @@
   </div>
 
 
-  <!-- =========================================================
-       EDIT ORDER MODAL
-       Allows the Cashier to adjust an order before payment.
-       This is separate from the main payment/status workflow.
-       ========================================================= -->
-  <div id="edit-modal" class="modal-backdrop hidden">
-
-   <div class="edit-modal-card">
-
-    <div class="modal-header">
-     <div>
-      <p class="modal-eyebrow">EDIT ORDER</p>
-      <h2>Update items before payment</h2>
-     </div>
-
-     <button type="button" onclick="closeEditModal()" class="modal-close-btn" aria-label="Close edit order modal">
-      <i data-lucide="x" class="w-5 h-5"></i>
-     </button>
+  <div id="receipt-modal" class="modal-backdrop hidden">
+   <section class="receipt-card" role="dialog" aria-modal="true" aria-labelledby="receipt-title">
+    <div id="receipt-content" class="receipt-content"></div>
+    <div class="receipt-actions">
+     <button type="button" class="receipt-done-btn" onclick="closeReceipt()">Done</button>
+     <button type="button" class="primary-btn" onclick="printReceipt()">Print Receipt</button>
     </div>
-
-
-    <div class="modal-body">
-
-     <!-- Existing selected-order items are rendered here -->
-     <div id="modal-items" class="modal-items"></div>
-
-
-     <!-- Optional additional item before payment -->
-     <div class="modal-add-row">
-
-      <select id="new-item-type">
-       <option value="Americano">Americano</option>
-       <option value="Latte">Latte</option>
-       <option value="Espresso">Espresso</option>
-       <option value="Cookie">Cookie</option>
-       <option value="Pasta">Pasta</option>
-      </select>
-
-      <button type="button" onclick="addModalItem()" class="add-item-btn">
-       Add Item
-      </button>
-
-     </div>
-
-
-     <div class="modal-footer">
-
-      <p>Change quantities or remove items before saving.</p>
-
-      <button type="button" onclick="saveOrderChanges()" class="save-btn">
-       Save Changes
-      </button>
-
-     </div>
-    </div>
-   </div>
+   </section>
   </div>
 
   <div id="void-modal" class="modal-backdrop hidden">
-   <div class="edit-modal-card void-modal-card" role="dialog" aria-modal="true" aria-labelledby="void-modal-title">
+   <div class="modal-card void-modal-card" role="dialog" aria-modal="true" aria-labelledby="void-modal-title">
     <div class="modal-header">
      <div>
       <p class="modal-eyebrow">VOID ORDER</p>

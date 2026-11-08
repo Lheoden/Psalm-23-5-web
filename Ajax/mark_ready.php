@@ -392,7 +392,6 @@ try {
     if ($pdo->inTransaction()) {
         $pdo->rollBack();
     }
-
     error_log('mark_ready.php: ' . $e->getMessage());
 
     respond(500, [

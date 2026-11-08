@@ -1013,3 +1013,36 @@ button { cursor: pointer; }
     grid-template-columns: 1fr;
   }
 }
+
+.logout-form {
+    margin: 0;
+}
+
+.logout-btn {
+    min-height: 46px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 14px;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    background: rgba(255, 255, 255, .82);
+    color: #596159;
+    font-family: inherit;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: .2s ease;
+}
+
+.logout-btn svg {
+    width: 16px;
+    height: 16px;
+}
+
+.logout-btn:hover {
+    background: #fff2f0;
+    border-color: #e7c5bd;
+    color: #a33c2e;
+}

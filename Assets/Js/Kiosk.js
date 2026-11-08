@@ -529,16 +529,12 @@ function renderProducts() {
           ${p.desc}
         </p>
 
-        <button
+             <button
           id="add-btn-${p.id}"
           onclick="addToCart(${p.id})"
-          class="w-full py-2.5 rounded-xl text-sm font-semibold transition ${
-            inCart
-              ? 'bg-forest/10 text-forest'
-              : 'bg-forest text-white hover:bg-forestLight'
-          }"
+          class="w-full py-2.5 rounded-xl text-sm font-semibold transition bg-forest text-white hover:bg-forestLight"
         >
-          ${inCart ? '✓ Added' : 'Add to Cart'}
+          Add to Cart
         </button>
 
       </div>
@@ -1510,8 +1506,8 @@ function checkoutCart() {
     if (item.requiresCustomization) {
       const choices = document.createElement('p');
       choices.className = 'mt-1 text-xs text-forest/60';
-      choices.textContent =
-        `Size: ${item.size || 'Medium'} · ${item.temp || 'Hot'} · ${item.sugar ?? 50}% sugar`;
+     choices.textContent =
+  `${item.temp || 'Hot'} · ${item.sugar ?? 50}% sugar`;
       row.appendChild(choices);
     }
 
@@ -1588,9 +1584,7 @@ async function confirmOrder() {
         product_id: Number(item.id),
         quantity: Number(item.qty),
 
-        size: item.requiresCustomization
-          ? (item.size || 'Medium')
-          : null,
+      size: null,
 
         temperature: item.requiresCustomization
           ? (item.temp || 'Hot')

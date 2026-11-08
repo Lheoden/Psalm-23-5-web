@@ -1,16 +1,20 @@
-
 <?php
+declare(strict_types=1);
+
+date_default_timezone_set('Asia/Manila');
 header('Content-Type: application/json; charset=utf-8');
 
 require_once __DIR__ . '/../db.php';
+require_once __DIR__ . '/pricing_helper.php';
 
-function respond($status, $data) {
+function respond($status, $data)
+{
     http_response_code($status);
-    echo json_encode($data, JSON_UNESCAPED_UNICODE);
+    echo json_encode($data, JSON_UNESCAPED_UNICODE | JSON_UNESCAPED_SLASHES);
     exit;
 }
 
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+if (($_SERVER['REQUEST_METHOD'] ?? '') !== 'POST') {
     respond(405, [
         'success' => false,
         'message' => 'POST method required.'
@@ -18,7 +22,6 @@ if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
 }
 
 $input = json_decode(file_get_contents('php://input'), true);
-
 if (!is_array($input)) {
     respond(400, [
         'success' => false,
@@ -26,61 +29,92 @@ if (!is_array($input)) {
     ]);
 }
 
-$orderId = filter_var(
-    $input['order_id'] ?? null,
+$orderId = filter_var($input['order_id'] ?? null, FILTER_VALIDATE_INT);
+$branchId = filter_var($input['branch_id'] ?? null, FILTER_VALIDATE_INT);
+$expectedFinalAmount = filter_var(
+    $input['expected_final_amount'] ?? null,
     FILTER_VALIDATE_INT
 );
+$category = $input['customer_category'] ?? null;
+$paymentMethod = $input['payment_method'] ?? null;
+$eligibilityConfirmed = $input['eligibility_confirmed'] ?? false;
+$validCategories = [
+    'Regular',
+    'Student',
+    'PWD',
+    'Senior Citizen',
+    'Owner'
+];
+$validMethods = ['Cash', 'GCash', 'None'];
 
-$branchId = filter_var(
-    $input['branch_id'] ?? null,
-    FILTER_VALIDATE_INT
-);
-
-$receivedInput = $input['amount_received'] ?? null;
-
-if (!$orderId || $orderId < 1 || !$branchId || $branchId < 1) {
+if (
+    $orderId === false || $orderId < 1 ||
+    $branchId === false || $branchId < 1
+) {
     respond(400, [
         'success' => false,
         'message' => 'Invalid order or branch ID.'
     ]);
 }
 
-if (
-    !is_numeric($receivedInput) ||
-    !is_finite((float) $receivedInput) ||
-    (float) $receivedInput < 0
-) {
+if (!in_array($category, $validCategories, true)) {
     respond(400, [
         'success' => false,
-        'message' => 'Enter a valid amount received.'
+        'message' => 'Select a valid customer category.'
     ]);
 }
 
-$amountReceived = round((float) $receivedInput, 2);
+if (in_array($category, ['Student', 'PWD', 'Senior Citizen'], true) && $eligibilityConfirmed !== true) {
+    respond(422, [
+        'success' => false,
+        'message' => 'Cashier confirmation of customer eligibility is required.'
+    ]);
+}
+
+if ($category === 'Owner') {
+    respond(403, [
+        'success' => false,
+        'message' => 'Owner transactions are unavailable until server-side authorization is configured.'
+    ]);
+}
+
+if (!in_array($paymentMethod, $validMethods, true)) {
+    respond(422, [
+        'success' => false,
+        'message' => 'Select Cash or GCash.'
+    ]);
+}
+
+if ($expectedFinalAmount === false || $expectedFinalAmount < 0) {
+    respond(400, [
+        'success' => false,
+        'message' => 'Invalid expected final amount in centavos.'
+    ]);
+}
+
+$transactionStarted = false;
 
 try {
     $pdo->beginTransaction();
+    $transactionStarted = true;
 
-    // Lock the selected order while validating payment.
     $orderQuery = $pdo->prepare(
-        "SELECT id, order_number, branch_id, order_status
+        "SELECT id, order_number, branch_id, order_type, order_status
          FROM orders
          WHERE id = :order_id
            AND branch_id = :branch_id
          LIMIT 1
          FOR UPDATE"
     );
-
     $orderQuery->execute([
         'order_id' => $orderId,
         'branch_id' => $branchId
     ]);
-
     $order = $orderQuery->fetch(PDO::FETCH_ASSOC);
 
     if (!$order) {
         $pdo->rollBack();
-
+        $transactionStarted = false;
         respond(404, [
             'success' => false,
             'message' => 'Order not found for this branch.'
@@ -89,102 +123,293 @@ try {
 
     if ($order['order_status'] !== 'UNPAID') {
         $pdo->rollBack();
-
+        $transactionStarted = false;
         respond(409, [
             'success' => false,
             'message' => 'This order is no longer unpaid.'
         ]);
     }
 
-    // Calculate the payable total from database order items.
     $itemsQuery = $pdo->prepare(
-        "SELECT
-            COUNT(*) AS item_count,
-            COALESCE(SUM(subtotal), 0) AS items_total
+        "SELECT product_name, quantity, unit_price, size, temperature,
+                sugar_percent
          FROM order_items
-         WHERE order_id = :order_id"
+         WHERE order_id = :order_id
+         ORDER BY id ASC"
     );
-
     $itemsQuery->execute(['order_id' => $orderId]);
-    $itemsData = $itemsQuery->fetch(PDO::FETCH_ASSOC);
+    $items = $itemsQuery->fetchAll(PDO::FETCH_ASSOC);
 
-    if ((int) $itemsData['item_count'] < 1) {
+    if ($items === []) {
         $pdo->rollBack();
-
+        $transactionStarted = false;
         respond(422, [
             'success' => false,
             'message' => 'Cannot accept payment for an order with no items.'
         ]);
     }
 
-    $total = round((float) $itemsData['items_total'], 2);
-
-    if ($amountReceived < $total) {
+    try {
+        $pricing = compute_order_pricing($items, $category);
+    } catch (InvalidArgumentException $e) {
         $pdo->rollBack();
-
+        $transactionStarted = false;
         respond(422, [
             'success' => false,
-            'message' => 'Amount received must be at least ' .
-                number_format($total, 2, '.', '') . '.'
+            'message' => $e->getMessage()
         ]);
     }
 
-    $change = round($amountReceived - $total, 2);
+    if ($pricing['subtotal_cents'] <= 0) {
+        $pdo->rollBack();
+        $transactionStarted = false;
+        respond(422, [
+            'success' => false,
+            'message' => 'Cannot accept payment for an order with a zero subtotal.'
+        ]);
+    }
 
-    // This prototype currently processes cash payments only.
+    if ($expectedFinalAmount !== $pricing['final_cents']) {
+        $pdo->rollBack();
+        $transactionStarted = false;
+        respond(409, [
+            'success' => false,
+            'message' => 'The order total changed. Review the recalculated amount before paying.',
+            'expected_final_amount' => $pricing['final_cents']
+        ]);
+    }
+
+    $finalCents = $pricing['final_cents'];
+    $receivedCents = 0;
+    $changeCents = 0;
+    $gcashReference = null;
+    $storedPaymentMethod = $paymentMethod;
+    $rules = pricing_rules();
+
+    if ($finalCents === 0) {
+        if ($category !== 'Owner' || $paymentMethod !== 'None') {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'Zero-payment orders are allowed only for Owner transactions.'
+            ]);
+        }
+
+        $storedPaymentMethod = $rules['owner_zero_payment_method'];
+        $receivedInput = $input['amount_received'] ?? 0;
+        $receivedCents = filter_var($receivedInput, FILTER_VALIDATE_INT);
+        if ($receivedCents === false || $receivedCents !== 0) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'Complimentary transactions must record zero amount received.'
+            ]);
+        }
+    } elseif ($paymentMethod === 'Cash') {
+        $receivedCents = filter_var(
+            $input['amount_received'] ?? null,
+            FILTER_VALIDATE_INT
+        );
+        if ($receivedCents === false || $receivedCents < $finalCents) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'Amount received must cover the final payable amount.'
+            ]);
+        }
+        $changeCents = $receivedCents - $finalCents;
+    } elseif ($paymentMethod === 'GCash') {
+        $rawReference = $input['gcash_reference'] ?? '';
+        if (!is_string($rawReference)) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'Enter a valid GCash reference number.'
+            ]);
+        }
+        $gcashReference = trim($rawReference);
+
+        if (
+            $gcashReference === '' ||
+            strlen($gcashReference) > 20 ||
+            preg_match('/[\x00-\x1F\x7F]/', $gcashReference)
+        ) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'GCash reference must contain 1–20 printable characters.'
+            ]);
+        }
+
+        if (($input['payment_verified'] ?? null) !== true) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(422, [
+                'success' => false,
+                'message' => 'Confirm that the exact GCash payment was checked in the merchant account.'
+            ]);
+        }
+
+        $referenceQuery = $pdo->prepare(
+            "SELECT id
+             FROM orders
+             WHERE gcash_reference = :gcash_reference
+               AND id <> :order_id
+             LIMIT 1"
+        );
+        $referenceQuery->execute([
+            'gcash_reference' => $gcashReference,
+            'order_id' => $orderId
+        ]);
+        if ($referenceQuery->fetchColumn()) {
+            $pdo->rollBack();
+            $transactionStarted = false;
+            respond(409, [
+                'success' => false,
+                'message' => 'This GCash reference number has already been used.'
+            ]);
+        }
+
+        $receivedCents = $finalCents;
+        $changeCents = 0;
+    } else {
+        $pdo->rollBack();
+        $transactionStarted = false;
+        respond(422, [
+            'success' => false,
+            'message' => 'Select Cash or GCash for a payable order.'
+        ]);
+    }
+
+    $paidAt = new DateTimeImmutable('now', new DateTimeZone('Asia/Manila'));
+    $paidAtDatabase = $paidAt->format('Y-m-d H:i:s');
+
+    // total_amount now stores the final payable amount.
     $updateQuery = $pdo->prepare(
         "UPDATE orders
-         SET total_amount = :total_amount,
-             order_status = 'PAID',
-             payment_method = 'Cash',
+         SET order_status = 'PAID',
+             customer_category = :customer_category,
+             subtotal_amount = :subtotal_amount,
+             vat_adjustment_amount = :vat_adjustment_amount,
+             discount_rate = :discount_rate,
+             discount_amount = :discount_amount,
+             total_amount = :total_amount,
+             payment_method = :payment_method,
+             gcash_reference = :gcash_reference,
+             gcash_verified_at = :gcash_verified_at,
              amount_paid = :amount_paid,
              change_amount = :change_amount,
-             paid_at = NOW()
+             paid_at = :paid_at
          WHERE id = :order_id
            AND branch_id = :branch_id
            AND order_status = 'UNPAID'"
     );
-
     $updateQuery->execute([
-        'total_amount' => $total,
-        'amount_paid' => $amountReceived,
-        'change_amount' => $change,
+        'customer_category' => $category,
+        'subtotal_amount' => cents_to_decimal($pricing['subtotal_cents']),
+        'vat_adjustment_amount' => cents_to_decimal($pricing['vat_adjustment_cents']),
+        'discount_rate' => number_format($pricing['discount_rate_bp'] / 10000, 4, '.', ''),
+        'discount_amount' => cents_to_decimal($pricing['discount_cents']),
+        'total_amount' => cents_to_decimal($finalCents),
+        'payment_method' => $storedPaymentMethod,
+        'gcash_reference' => $gcashReference,
+        'gcash_verified_at' => $paymentMethod === 'GCash' ? $paidAtDatabase : null,
+        'amount_paid' => cents_to_decimal($receivedCents),
+        'change_amount' => cents_to_decimal($changeCents),
+        'paid_at' => $paidAtDatabase,
         'order_id' => $orderId,
         'branch_id' => $branchId
     ]);
 
     if ($updateQuery->rowCount() !== 1) {
         $pdo->rollBack();
-
+        $transactionStarted = false;
         respond(409, [
             'success' => false,
             'message' => 'Payment was not recorded. Reload the order and try again.'
         ]);
     }
 
+    $branchQuery = $pdo->prepare(
+        'SELECT branch_name FROM branches WHERE id = :branch_id LIMIT 1'
+    );
+    $branchQuery->execute(['branch_id' => $branchId]);
+    $branchName = $branchQuery->fetchColumn();
+
+    if ($branchName === false) {
+        throw new RuntimeException('Branch disappeared while completing payment.');
+    }
+
     $pdo->commit();
+    $transactionStarted = false;
 
     respond(200, [
         'success' => true,
-        'message' => 'Payment recorded successfully.',
         'order_id' => (int) $order['id'],
         'order_number' => $order['order_number'],
         'order_status' => 'PAID',
-        'payment_method' => 'Cash',
-        'total_amount' => $total,
-        'amount_paid' => $amountReceived,
-        'change_amount' => $change
-    ]);
+        'branch_name' => $branchName,
+        'order_type' => $order['order_type'],
+        'items' => array_map(
+            static function (array $item): array {
+                $unitPriceCents = pricing_amount_to_cents($item['unit_price']);
+                $quantity = (int) $item['quantity'];
 
+                return [
+                    'name' => $item['product_name'],
+                    'quantity' => $quantity,
+                    'unit_price' => cents_to_decimal($unitPriceCents),
+                    'line_total' => cents_to_decimal($quantity * $unitPriceCents),
+                    'size' => $item['size'],
+                    'temperature' => $item['temperature'],
+                    'sugar_percent' => $item['sugar_percent']
+                ];
+            },
+            $items
+        ),
+        'customer_category' => $category,
+        'payment_method' => $storedPaymentMethod,
+        'gcash_reference' => $gcashReference,
+        'gcash_verified_at' => $paymentMethod === 'GCash' ? $paidAt->format(DateTimeInterface::ATOM) : null,
+        'subtotal_amount' => cents_to_decimal($pricing['subtotal_cents']),
+        'vat_adjustment_amount' => cents_to_decimal($pricing['vat_adjustment_cents']),
+        'discount_rate' => number_format($pricing['discount_rate_bp'] / 10000, 4, '.', ''),
+        'discount_amount' => cents_to_decimal($pricing['discount_cents']),
+        'total_amount' => cents_to_decimal($finalCents),
+        'amount_paid' => cents_to_decimal($receivedCents),
+        'change_amount' => cents_to_decimal($changeCents),
+        'paid_at' => $paidAt->format(DateTimeInterface::ATOM)
+    ]);
+} catch (PDOException $e) {
+    if ($transactionStarted && $pdo->inTransaction()) {
+        $pdo->rollBack();
+    }
+
+    if (($e->errorInfo[1] ?? null) === 1062) {
+        respond(409, [
+            'success' => false,
+            'message' => 'This GCash reference number has already been used.'
+        ]);
+    }
+
+    error_log('mark_paid.php: ' . $e->getMessage());
+    respond(500, [
+        'success' => false,
+        'message' => 'Unable to record payment.'
+    ]);
 } catch (Throwable $e) {
-    if ($pdo->inTransaction()) {
+    if ($transactionStarted && $pdo->inTransaction()) {
         $pdo->rollBack();
     }
 
     error_log('mark_paid.php: ' . $e->getMessage());
-
     respond(500, [
         'success' => false,
-        'message' => 'Unable to record payment. Check the PHP error log.'
+        'message' => 'Unable to record payment.'
     ]);
 }
